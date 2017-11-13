@@ -10,6 +10,10 @@ import (
 	"sync"
 )
 
+//To Implement:
+//  - Only use one log for storing information
+//    - This means that the dictionary needs to be retrieved in a different way
+
 const staticLog = "./localLog.json"
 const staticDict = "./localDict.json"
 const staticTArray = "./localTArray.json"
