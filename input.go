@@ -100,6 +100,12 @@ func (localN *Node) TweetEvent(message string) {
 	//		If True, send accept to all, wait for ack message, then send commit
 	//			On commit, save the entry to the log
 
+	retVal := localN.Propose(ety)
+	if retVal == true {
+		fmt.Println("Propossal was successful")
+	} else if retVal == false {
+		fmt.Println("Error: Propossal was Unsuccessful")
+	}
 	//update the tweet in memory
 	//localN.Log = append(localN.Log, ety)
 	//update the tweet in the physical log
@@ -141,8 +147,8 @@ func (localN *Node) BlockUser(username string) {
 	}
 	localN.NodeMutex.Lock()
 	defer localN.NodeMutex.Unlock()
-	userID, _ := strconv.Atoi(username)
-	etyBlock := entry{"", localN.Id, userID, time.Now().UTC(), -5000000, 1}
+	//userID, _ := strconv.Atoi(username)
+	//etyBlock := entry{"", localN.Id, userID, time.Now().UTC(), -5000000, 1}
 	//Send Execution
 
 	//localN.Log[localN.Id] = append(localN.Log[localN.Id], etyBlock)
@@ -158,8 +164,8 @@ func (localN *Node) UnblockUser(username string) {
 	}
 	localN.NodeMutex.Lock()
 	defer localN.NodeMutex.Unlock()
-	userID, _ := strconv.Atoi(username)
-	etyUnblock := entry{"", localN.Id, userID, time.Now().UTC(), -500000, 2}
+	//userID, _ := strconv.Atoi(username)
+	//etyUnblock := entry{"", localN.Id, userID, time.Now().UTC(), -500000, 2}
 	//Send Execution
 
 	//localN.Log[localN.Id] = append(localN.Log[localN.Id], twtUnblock)
