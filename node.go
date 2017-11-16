@@ -20,9 +20,10 @@ type Node struct {
 	Id       int
 	SiteName string
 
-	MaxPrepare int
-	AccNum     int
-	AccVal     entry
+	MaxPrepare   int
+	AccNum       int
+	AccVal       entry
+	PropossalVal int
 
 	NodeMutex *sync.Mutex
 
@@ -61,6 +62,7 @@ func makeNode(inputfile string, inputID int) *Node {
 	//ret.MaxPrepare = 0
 	//ret.AccNum = 0
 	//ret.AccVal =
+	ret.PropossalVal = inputID
 
 	parts := strings.Split(info.IPs[strconv.Itoa(ret.Id)], ":")
 	ret.ListenPort, err = strconv.Atoi(parts[1])
@@ -117,6 +119,11 @@ func makeNode(inputfile string, inputID int) *Node {
 	}
 
 	return ret
+}
+
+func (n *Node) IncrementPropossalVal() {
+	n.PropossalVal += len(n.IPtargets)
+	return
 }
 
 func (n *Node) LoadEntries(filename string) (bool, error) {
