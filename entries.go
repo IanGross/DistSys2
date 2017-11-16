@@ -32,7 +32,7 @@ type entry struct {
 
 //struct for propose, promise, accept, ack, and commit messages
 type message struct {
-	UserID  int
+	SendID  int
 	MsgType int
 	ANum    int
 	AVal    entry
