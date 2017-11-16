@@ -13,7 +13,7 @@ const ( //iota is reset to 0
 )
 
 const ( //iota is reset to 0
-	PROPOSE = iota
+	PREPARE = iota
 	PROMISE = iota
 	ACCEPT  = iota
 	ACK     = iota
