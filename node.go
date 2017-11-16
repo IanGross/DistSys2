@@ -24,6 +24,7 @@ type Node struct {
 	AccNum       int
 	AccVal       entry
 	PropossalVal int
+	MajorityVal  int
 
 	NodeMutex *sync.Mutex
 
@@ -63,6 +64,7 @@ func makeNode(inputfile string, inputID int) *Node {
 	//ret.AccNum = 0
 	//ret.AccVal =
 	ret.PropossalVal = inputID
+	ret.MajorityVal = info.TotalNodes/2 + 1
 
 	parts := strings.Split(info.IPs[strconv.Itoa(ret.Id)], ":")
 	ret.ListenPort, err = strconv.Atoi(parts[1])
