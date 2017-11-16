@@ -23,9 +23,9 @@ func main() {
 		log.Fatalln("Integer not entered for second argument (id)")
 	}
 
-	//local := makeNode(starting, idInt)
+	local := makeNode(starting, idInt)
 	//create thread at separate function to listen for incomming messages
 	//go listen(local)
-	//InputHandler(local)
+	InputHandler(local)
 	return
 }
