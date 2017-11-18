@@ -23,8 +23,10 @@ type Node struct {
 	MaxPrepare   int
 	AccNum       int
 	AccVal       entry
-	PropossalVal int
+	ProposalVal  int
 	MajorityVal  int
+	RecvAccepted int
+	SlotCounter  int
 
 	NodeMutex *sync.Mutex
 
@@ -60,11 +62,13 @@ func makeNode(inputfile string, inputID int) *Node {
 	ret.Id = inputID
 	ret.SiteName = info.Names[strconv.Itoa(ret.Id)]
 	//Set the initial values for these values? Or are they just null?
-	//ret.MaxPrepare = 0
-	//ret.AccNum = 0
-	//ret.AccVal =
-	ret.PropossalVal = inputID
+	ret.MaxPrepare = -1
+	ret.AccNum = -1
+	var itt entry
+	ret.AccVal = itt
+	ret.ProposalVal = inputID
 	ret.MajorityVal = info.TotalNodes/2 + 1
+	ret.SlotCounter = 0
 
 	parts := strings.Split(info.IPs[strconv.Itoa(ret.Id)], ":")
 	ret.ListenPort, err = strconv.Atoi(parts[1])
@@ -124,7 +128,7 @@ func makeNode(inputfile string, inputID int) *Node {
 }
 
 func (n *Node) IncrementPropossalVal() {
-	n.PropossalVal += len(n.IPtargets)
+	n.ProposalVal += len(n.IPtargets)
 	return
 }
 
