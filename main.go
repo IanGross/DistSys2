@@ -25,7 +25,7 @@ func main() {
 
 	local := makeNode(starting, idInt)
 	//create thread at separate function to listen for incomming messages
-	//go listen(local)
+	go listen(local)
 	InputHandler(local)
 	return
 }

@@ -21,13 +21,16 @@ const ( //iota is reset to 0
 )
 
 type entry struct {
-	Message  string
-	User     int
-	Follower int
-	Clock    time.Time
-	EntryVal int
-	Event    int
+	Message    string
+	User       int
+	Follower   int
+	Clock      time.Time
+	Event      int
+	EntryVal   int
+	SlotNumber int
 	//event is the type (tweet,insert,delete)
+	//EntryVal is the proposed value that was accepted
+	//SlotNumber is the order it was inserted into the log
 }
 
 //struct for propose, promise, accept, ack, and commit messages

@@ -92,7 +92,7 @@ func (localN *Node) TweetEvent(message string) {
 	//Update the counter
 	localN.NodeMutex.Lock()
 	defer localN.NodeMutex.Unlock()
-	ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), -500000, 0}
+	ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), 0, localN.ProposalVal, localN.SlotCounter + 1}
 	//Send Execution (Put in a new file)
 	//	Call: Propose
 	//	Wait for a Promise from the Majority of Users

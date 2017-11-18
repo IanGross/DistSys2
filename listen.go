@@ -45,7 +45,6 @@ func handleConn(conn net.Conn, serv *Node) {
 		return
 	}
 
-	//NOTE: UPDATE THE RECIEVE FUNCTION BEFORE UNCOMMENTING
-	//serv.receive(msg)
+	serv.receive(msg)
 	return
 }
