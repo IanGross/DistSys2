@@ -29,9 +29,6 @@ type Node struct {
 	RecvAcceptedAck     int
 	SlotCounter         int
 	LeaderID            int
-	//TO DO: Add an acceptor bool that is set to false initially
-	//	sets to true when it sets its MaxPrepare after a propose, to only accept from that MaxPrepare value
-	//	sets back to false when it commits to the log
 
 	NodeMutex *sync.Mutex
 
