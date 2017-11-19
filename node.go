@@ -110,18 +110,18 @@ func makeNode(inputfile string, inputID int) *Node {
 	//Populate the IPtargets
 	for keyValue, mapValue := range info.IPs {
 		idInt, _ := strconv.Atoi(keyValue)
-		if idInt != ret.Id {
-			ret.IPtargets[idInt] = mapValue
-		}
+		//if idInt != ret.Id {
+		ret.IPtargets[idInt] = mapValue
+		//}
 	}
 
 	ret.Names = make(map[int]string)
 	//Populate the IPtargets
 	for keyValue, mapValue := range info.Names {
 		idInt, _ := strconv.Atoi(keyValue)
-		if idInt != ret.Id {
-			ret.Names[idInt] = mapValue
-		}
+		//if idInt != ret.Id {
+		ret.Names[idInt] = mapValue
+		//}
 	}
 
 	return ret
