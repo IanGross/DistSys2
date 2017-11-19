@@ -14,7 +14,8 @@ func (n *Node) recieve(conn net.Conn) {
 	_, err := conn.Read(recvBuf)
 	recvBuf = bytes.Trim(recvBuf, "\x00")
 	if err != nil {
-		log.Println(err)
+		fmt.Println("Recieve Function: No message was found")
+		//log.Println(err)
 		return
 	}
 	var msg message
@@ -24,26 +25,30 @@ func (n *Node) recieve(conn net.Conn) {
 		return
 	}
 
-	log.Println("Recieved message from ", msg.SendID)
+	//log.Println("Recieved message from ", msg.SendID)
 
 	switch recvMsgType := msg.MsgType; recvMsgType {
 	case PREPARE:
-		fmt.Println("PREPARE RECIEVED")
+		fmt.Printf("Recieved message from %v - Propose(%v)\n", msg.SendID, msg.ANum)
 		n.recvPrepare(msg, conn)
 	case PROMISE:
-		fmt.Println("PROMISE RECIEVED")
+		fmt.Printf("Recieved message from %v - Promise(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
+		n.recvPromise(msg)
 	case ACCEPT:
-		fmt.Println("ACCEPT RECIEVED")
+		fmt.Printf("Recieved message from %v - Accept(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
+		n.recvAccept(msg, conn)
 	case ACK:
-		fmt.Println("ACK RECIEVED")
+		fmt.Printf("Recieved message from %v - Ack(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
+		n.recvAck(msg)
 	case COMMIT:
-		fmt.Println("COMMIT RECIEVED")
+		fmt.Printf("Recieved message from %v - Commit(%v)\n", msg.SendID, msg.AVal)
+		n.recvCommit(msg)
 	default:
 		fmt.Println("ERROR: The recieved message type is not valid")
 	}
 
 	//provide clarity to user that user input is still available
-	fmt.Printf("Please enter a Command: ")
+	//fmt.Printf("Please enter a Command: ")
 }
 
 func (n *Node) recvPrepare(msg message, conn net.Conn) {
@@ -55,6 +60,7 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 		msg := message{n.Id, PROMISE, n.AccNum, n.AccVal}
 		n.Send(conn, recvID, msg)
 	} else {
+		//Possible optimization: Send something back saying that the request failed
 		fmt.Println("MaxPrepare is less than or equal to proposed n. No reponse is being returned")
 	}
 	//TO DO: Add another if statement that won't respond to the request if it already accepted another one
@@ -62,10 +68,7 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 }
 
 func (n *Node) recvPromise(msg message) {
-	if msg.ANum > n.MaxPrepare {
-		n.MaxPrepare = msg.ANum
-		n.RecvAcceptedPromise++
-	}
+	n.RecvAcceptedPromise++
 	return
 }
 
