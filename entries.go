@@ -18,7 +18,12 @@ const ( //iota is reset to 0
 	ACCEPT  = iota
 	ACK     = iota
 	COMMIT  = iota
+	CHECK   = iota
+	ALIVE   = iota
 )
+
+//Note: CHECK is for recovery of log and ALIVE is for liveness
+// They are not implemented yet and may not be necessary (especially ALIVE, b/c that would be for liveness)
 
 type entry struct {
 	Message    string
