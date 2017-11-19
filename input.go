@@ -90,8 +90,8 @@ func (localN *Node) ViewTweets() {
 
 func (localN *Node) TweetEvent(message string) {
 	//Update the counter
-	localN.NodeMutex.Lock()
-	defer localN.NodeMutex.Unlock()
+	//localN.NodeMutex.Lock()
+	//defer localN.NodeMutex.Unlock()
 	ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), 0, localN.ProposalVal, localN.SlotCounter + 1}
 	//Send Execution (Put in a new file)
 	//	Call: Propose
@@ -145,8 +145,8 @@ func (localN *Node) BlockUser(username string) {
 		log.Println("Invalid Block Call")
 		return
 	}
-	localN.NodeMutex.Lock()
-	defer localN.NodeMutex.Unlock()
+	//localN.NodeMutex.Lock()
+	//defer localN.NodeMutex.Unlock()
 	//userID, _ := strconv.Atoi(username)
 	//etyBlock := entry{"", localN.Id, userID, time.Now().UTC(), -5000000, 1}
 	//Send Execution
@@ -162,8 +162,8 @@ func (localN *Node) UnblockUser(username string) {
 		log.Println("Invalid Block Call")
 		return
 	}
-	localN.NodeMutex.Lock()
-	defer localN.NodeMutex.Unlock()
+	//localN.NodeMutex.Lock()
+	//defer localN.NodeMutex.Unlock()
 	//userID, _ := strconv.Atoi(username)
 	//etyUnblock := entry{"", localN.Id, userID, time.Now().UTC(), -500000, 2}
 	//Send Execution
