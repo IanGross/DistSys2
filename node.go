@@ -27,6 +27,7 @@ type Node struct {
 	MajorityVal         int
 	RecvAcceptedPromise int
 	RecvAcceptedAck     int
+	CountSiteFailures   int
 	SlotCounter         int
 	LeaderID            int
 
