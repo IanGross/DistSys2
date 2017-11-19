@@ -10,10 +10,7 @@ import (
 	"time"
 )
 
-//TO DO: Call the propose, accept, etc.
-// For simplicity, maybe combine the three events into one function, and pass the event type to distinguish between the three
-
-//Prints all events stored in the log
+//PrintLog Prints all events stored in the log
 func (localN *Node) PrintLog() {
 	//fmt.Println(localN.Log)
 	for i := 0; i < len(localN.Log); i++ {
@@ -30,13 +27,13 @@ func (localN *Node) PrintLog() {
 	}
 }
 
-//Prints all events stored in the log (for pu)
+//PrintDictionary Prints all events stored in the log (for pu)
 func (localN *Node) PrintDictionary() {
 	//fmt.Println(localN.Blocks)
 	for k, v := range localN.Blocks {
 		fmt.Println("Dictionary at site", k, "-", len(v), "site(s) blocked")
-		for kVal, vVal := range localN.Blocks[k] {
-			fmt.Println("- Site", kVal, ", ", vVal)
+		for kval, vval := range localN.Blocks[k] {
+			fmt.Println("- Site", kval, ", ", vval)
 		}
 	}
 }
@@ -92,24 +89,13 @@ func (localN *Node) TweetEvent(message string) {
 	//Update the counter
 	//localN.NodeMutex.Lock()
 	//defer localN.NodeMutex.Unlock()
-	ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), 0, localN.ProposalVal, localN.SlotCounter + 1}
-	//Send Execution (Put in a new file)
-	//	Call: Propose
-	//	Wait for a Promise from the Majority of Users
-	//		If False (competing propossal or no majority), stop execution and tell user that proposal has failed (DON'T ADD TO LOG)
-	//		If True, send accept to all, wait for ack message, then send commit
-	//			On commit, save the entry to the log
-
+	ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), 0, localN.ProposalVal, localN.SlotCounter}
 	retVal := localN.Propose(ety)
 	if retVal == true {
 		fmt.Println("Propossal was successful")
 	} else if retVal == false {
 		fmt.Println("Error: Propossal was Unsuccessful")
 	}
-	//update the tweet in memory
-	//localN.Log = append(localN.Log, ety)
-	//update the tweet in the physical log
-	//localN.writeLog()
 }
 
 func (localN *Node) InvalidBlock(username string, blockType int) bool {
@@ -147,14 +133,14 @@ func (localN *Node) BlockUser(username string) {
 	}
 	//localN.NodeMutex.Lock()
 	//defer localN.NodeMutex.Unlock()
-	//userID, _ := strconv.Atoi(username)
-	//etyBlock := entry{"", localN.Id, userID, time.Now().UTC(), -5000000, 1}
-	//Send Execution
-
-	//localN.Log[localN.Id] = append(localN.Log[localN.Id], etyBlock)
-	//localN.Blocks[localN.Id][userID] = true
-	//localN.writeLog()
-	//localN.addToDict()
+	userID, _ := strconv.Atoi(username)
+	etyBlock := entry{"", localN.Id, userID, time.Now().UTC(), 1, localN.ProposalVal, localN.SlotCounter}
+	retVal := localN.Propose(etyBlock)
+	if retVal == true {
+		fmt.Println("Propossal was successful")
+	} else if retVal == false {
+		fmt.Println("Error: Propossal was Unsuccessful")
+	}
 }
 
 func (localN *Node) UnblockUser(username string) {
@@ -164,15 +150,14 @@ func (localN *Node) UnblockUser(username string) {
 	}
 	//localN.NodeMutex.Lock()
 	//defer localN.NodeMutex.Unlock()
-	//userID, _ := strconv.Atoi(username)
-	//etyUnblock := entry{"", localN.Id, userID, time.Now().UTC(), -500000, 2}
-	//Send Execution
-
-	//localN.Log[localN.Id] = append(localN.Log[localN.Id], twtUnblock)
-	//delete(localN.Blocks[localN.Id], userID)
-	//localN.Blocks[localN.Id][userID] = false
-	//localN.writeLog()
-	//localN.addToDict()
+	userID, _ := strconv.Atoi(username)
+	etyUnblock := entry{"", localN.Id, userID, time.Now().UTC(), 2, localN.ProposalVal, localN.SlotCounter}
+	retVal := localN.Propose(etyUnblock)
+	if retVal == true {
+		fmt.Println("Propossal was successful")
+	} else if retVal == false {
+		fmt.Println("Error: Propossal was Unsuccessful")
+	}
 }
 
 func InputHandler(local *Node) {
