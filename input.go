@@ -78,6 +78,8 @@ func (localN *Node) ViewTweets() {
 	for i := 0; i < len(logReverse); i++ {
 		if logReverse[i].Event == 0 && localN.Blocks[localN.Id][logReverse[i].User] == false {
 			fmt.Printf(time.Time.String(logReverse[i].Clock) + " - ")
+			fmt.Printf("Propossal value " + strconv.Itoa(logReverse[i].EntryVal) + ", ")
+			fmt.Printf("Slot " + strconv.Itoa(logReverse[i].SlotNumber) + " - ")
 			fmt.Printf("User " + strconv.Itoa(logReverse[i].User) + ": ")
 			fmt.Printf(logReverse[i].Message)
 			fmt.Println("")
@@ -89,12 +91,19 @@ func (localN *Node) TweetEvent(message string) {
 	//Update the counter
 	//localN.NodeMutex.Lock()
 	//defer localN.NodeMutex.Unlock()
-	ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), 0, localN.ProposalVal, localN.SlotCounter}
-	retVal := localN.Propose(ety)
-	if retVal == true {
-		fmt.Println("Propossal was successful")
-	} else if retVal == false {
-		fmt.Println("Error: Propossal was Unsuccessful")
+	var emptyEntry entry
+	retVal1 := localN.ProposePhase(emptyEntry)
+	if retVal1 == true {
+		fmt.Println("Propossal was successful") //add: of value _
+		ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), 0, localN.ProposalVal, localN.SlotCounter}
+		retVal2 := localN.AcceptPhase(ety)
+		if retVal2 == true {
+			fmt.Println("Accept Phase and Commit was successful, proposed entry has been added to the log")
+		} else if retVal2 == false {
+			fmt.Println("Failure: Accept phase was unsuccessful")
+		}
+	} else if retVal1 == false {
+		fmt.Println("Failure: Propossal was Unsuccessful")
 	}
 }
 
@@ -135,7 +144,7 @@ func (localN *Node) BlockUser(username string) {
 	//defer localN.NodeMutex.Unlock()
 	userID, _ := strconv.Atoi(username)
 	etyBlock := entry{"", localN.Id, userID, time.Now().UTC(), 1, localN.ProposalVal, localN.SlotCounter}
-	retVal := localN.Propose(etyBlock)
+	retVal := localN.ProposePhase(etyBlock)
 	if retVal == true {
 		fmt.Println("Propossal was successful")
 	} else if retVal == false {
@@ -152,7 +161,7 @@ func (localN *Node) UnblockUser(username string) {
 	//defer localN.NodeMutex.Unlock()
 	userID, _ := strconv.Atoi(username)
 	etyUnblock := entry{"", localN.Id, userID, time.Now().UTC(), 2, localN.ProposalVal, localN.SlotCounter}
-	retVal := localN.Propose(etyUnblock)
+	retVal := localN.ProposePhase(etyUnblock)
 	if retVal == true {
 		fmt.Println("Propossal was successful")
 	} else if retVal == false {
