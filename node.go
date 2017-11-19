@@ -20,13 +20,18 @@ type Node struct {
 	Id       int
 	SiteName string
 
-	MaxPrepare   int
-	AccNum       int
-	AccVal       entry
-	ProposalVal  int
-	MajorityVal  int
-	RecvAccepted int
-	SlotCounter  int
+	MaxPrepare          int
+	AccNum              int
+	AccVal              entry
+	ProposalVal         int
+	MajorityVal         int
+	RecvAcceptedPromise int
+	RecvAcceptedAck     int
+	SlotCounter         int
+	LeaderID            int
+	//TO DO: Add an acceptor bool that is set to false initially
+	//	sets to true when it sets its MaxPrepare after a propose, to only accept from that MaxPrepare value
+	//	sets back to false when it commits to the log
 
 	NodeMutex *sync.Mutex
 
@@ -48,9 +53,10 @@ func makeNode(inputfile string, inputID int) *Node {
 	}
 
 	type startinfo struct {
-		Names      map[string]string
-		TotalNodes int
-		IPs        map[string]string
+		Names         map[string]string
+		TotalNodes    int
+		EntryLeaderID int
+		IPs           map[string]string
 	}
 
 	var info startinfo //Deserialize the JSON
@@ -69,6 +75,7 @@ func makeNode(inputfile string, inputID int) *Node {
 	ret.ProposalVal = inputID
 	ret.MajorityVal = info.TotalNodes/2 + 1
 	ret.SlotCounter = 0
+	ret.LeaderID = info.EntryLeaderID
 
 	parts := strings.Split(info.IPs[strconv.Itoa(ret.Id)], ":")
 	ret.ListenPort, err = strconv.Atoi(parts[1])
@@ -164,10 +171,6 @@ func (n *Node) LoadDict() error {
 	//		If the entry is block or unblock, perform the update to local dictionary without sending it to the other locations
 
 	return nil
-}
-
-func (n *Node) addToDict() {
-	return
 }
 
 func (n *Node) writeLog() {
