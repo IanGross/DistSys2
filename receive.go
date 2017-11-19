@@ -8,13 +8,13 @@ import (
 	"net"
 )
 
-func (n *Node) recieve(conn net.Conn) {
+func (n *Node) receive(conn net.Conn) {
 
 	recvBuf := make([]byte, 4096*10)
 	_, err := conn.Read(recvBuf)
 	recvBuf = bytes.Trim(recvBuf, "\x00")
 	if err != nil {
-		fmt.Println("Recieve Function: No message was found")
+		fmt.Println("Receive Function: No message was found")
 		//log.Println(err)
 		return
 	}
@@ -25,23 +25,23 @@ func (n *Node) recieve(conn net.Conn) {
 		return
 	}
 
-	//log.Println("Recieved message from ", msg.SendID)
+	//log.Println("Received message from ", msg.SendID)
 
 	switch recvMsgType := msg.MsgType; recvMsgType {
 	case PREPARE:
-		fmt.Printf("Recieved message from %v - Propose(%v)\n", msg.SendID, msg.ANum)
+		fmt.Printf("Received message from %v - Propose(%v)\n", msg.SendID, msg.ANum)
 		n.recvPrepare(msg, conn)
 	case PROMISE:
-		fmt.Printf("Recieved message from %v - Promise(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
+		fmt.Printf("Received message from %v - Promise(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
 		n.recvPromise(msg)
 	case ACCEPT:
-		fmt.Printf("Recieved message from %v - Accept(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
+		fmt.Printf("Received message from %v - Accept(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
 		n.recvAccept(msg, conn)
 	case ACK:
-		fmt.Printf("Recieved message from %v - Ack(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
+		fmt.Printf("Received message from %v - Ack(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
 		n.recvAck(msg)
 	case COMMIT:
-		fmt.Printf("Recieved message from %v - Commit(%v)\n", msg.SendID, msg.AVal)
+		fmt.Printf("Received message from %v - Commit(%v)\n", msg.SendID, msg.AVal)
 		n.recvCommit(msg)
 	default:
 		fmt.Println("ERROR: The recieved message type is not valid")
@@ -96,7 +96,7 @@ func (n *Node) recvAck(msg message) {
 func (n *Node) recvCommit(msg message) {
 	//Update the node values
 	n.SlotCounter++
-	n.IncrementPropossalVal()
+	//n.IncrementPropossalVal()
 	//Add the value to the physical and virtual log
 	n.Log = append(n.Log, msg.AVal)
 	n.writeLog()

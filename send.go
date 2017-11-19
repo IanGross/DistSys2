@@ -30,7 +30,7 @@ func (n *Node) ProposePhase(ety entry) bool {
 				}
 			}
 		*/
-		fmt.Println("Number of Responses Recieved:", n.RecvAcceptedPromise)
+		fmt.Println("Number of Responses Received:", n.RecvAcceptedPromise)
 		if n.RecvAcceptedPromise >= n.MajorityVal {
 			//if the number is achieved, exit, goal complete
 			return true
@@ -54,7 +54,7 @@ func (n *Node) AcceptPhase(ety entry) bool {
 	n.CountSiteFailures = 0
 	msg := message{n.Id, ACCEPT, n.ProposalVal, ety}
 	n.BroadCast(msg)
-	fmt.Println("Number of Responses Recieved:", n.RecvAcceptedAck)
+	fmt.Println("Number of Responses Received:", n.RecvAcceptedAck)
 	//If receive ack from a majority, send commit(v)
 	if n.RecvAcceptedAck >= n.MajorityVal {
 		fmt.Println("Received ack from a majority of sites, sending commit")
@@ -66,7 +66,7 @@ func (n *Node) AcceptPhase(ety entry) bool {
 	return false
 }
 
-//Generate message for send and possible recieve
+//Generate message for send and possible receive
 func (n *Node) BroadCast(msg message) {
 	//n.NodeMutex.Lock()
 	//defer n.NodeMutex.Unlock()
@@ -89,12 +89,12 @@ func (n *Node) BroadCast(msg message) {
 			}
 		*/
 		//Possible improvement: create new go thread for each one (may lead to errors)
-		n.HandleSendAndRecieve(ip, i, msg)
+		n.HandleSendAndReceive(ip, i, msg)
 	}
 	return
 }
 
-func (n *Node) HandleSendAndRecieve(ip string, k int, msg message) {
+func (n *Node) HandleSendAndReceive(ip string, k int, msg message) {
 	conn, err := net.Dial("tcp", ip)
 	if err != nil {
 		//log.Println("Failed to connect to ", ip, "  ", err)
@@ -105,7 +105,7 @@ func (n *Node) HandleSendAndRecieve(ip string, k int, msg message) {
 	defer conn.Close()
 	n.Send(conn, k, msg)
 	if msg.MsgType == PREPARE || msg.MsgType == ACCEPT {
-		n.recieve(conn)
+		n.receive(conn)
 	}
 	return
 }

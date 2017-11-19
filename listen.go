@@ -27,7 +27,7 @@ func handleConn(conn net.Conn, serv *Node) {
 	//defer n.NodeMutex.Unlock()
 	fmt.Println("Handling connection request...")
 	defer conn.Close()
-	serv.recieve(conn)
-	//recieve may also send a response message, depending on the type of message
+	serv.receive(conn)
+	//receive may also send a response message, depending on the type of message
 	return
 }
