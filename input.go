@@ -48,9 +48,9 @@ func reverse(logArray []entry) []entry {
 func OrganizeEntries(logContent []entry) []entry {
 	var combineList []entry
 	for i := 0; i < len(logContent); i++ {
-		if logContent[i].Event != 0 {
-			continue
-		}
+		//if logContent[i].Event != 0 {
+		//	continue
+		//}
 		if len(combineList) == 0 {
 			combineList = append(combineList, logContent[i])
 		} else {
@@ -76,9 +76,10 @@ func (localN *Node) ViewTweets() {
 	organizedLog := OrganizeEntries(localN.Log)
 	logReverse := reverse(organizedLog)
 	for i := 0; i < len(logReverse); i++ {
-		if logReverse[i].Event == 0 && localN.Blocks[localN.Id][logReverse[i].User] == false {
+		//if logReverse[i].Event == 0 && localN.Blocks[localN.Id][logReverse[i].User] == false {
+		if logReverse[i].Event == 0 {
 			fmt.Printf(time.Time.String(logReverse[i].Clock) + " - ")
-			fmt.Printf("Propossal value " + strconv.Itoa(logReverse[i].EntryVal) + ", ")
+			fmt.Printf("Propossal value " + strconv.Itoa(logReverse[i].AccNum) + ", ")
 			fmt.Printf("Slot " + strconv.Itoa(logReverse[i].SlotNumber) + " - ")
 			fmt.Printf("User " + strconv.Itoa(logReverse[i].User) + ": ")
 			fmt.Printf(logReverse[i].Message)

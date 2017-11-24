@@ -29,7 +29,7 @@ type entry struct {
 	Follower   int
 	Clock      time.Time
 	Event      int
-	EntryVal   int
+	AccNum     int
 	SlotNumber int
 	//event is the type (tweet,insert,delete)
 	//EntryVal is the proposed value that was accepted
@@ -42,6 +42,7 @@ type message struct {
 	MsgType int
 	ANum    int
 	AVal    entry
+	Slot    int
 }
 
 func (n entry) getTimestamp() time.Time {

@@ -57,7 +57,7 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 
 		//send a new message as a response
 		recvID := msg.SendID
-		msg := message{n.Id, PROMISE, n.AccNum, n.AccVal}
+		msg := message{n.Id, PROMISE, n.AccNum, n.AccVal, n.SlotCounter}
 		n.Send(conn, recvID, msg)
 	} else {
 		//Possible optimization: Send something back saying that the request failed
@@ -80,7 +80,7 @@ func (n *Node) recvAccept(msg message, conn net.Conn) {
 
 		//send a new message as a response
 		recvID := msg.SendID
-		msg := message{n.Id, ACK, n.AccNum, n.AccVal}
+		msg := message{n.Id, ACK, n.AccNum, n.AccVal, n.SlotCounter}
 		n.Send(conn, recvID, msg)
 	} else {
 		fmt.Println("MaxPrepare is less than accept value of n. No reponse is being returned")
@@ -94,19 +94,20 @@ func (n *Node) recvAck(msg message) {
 }
 
 func (n *Node) recvCommit(msg message) {
-	//Update the node values
-	n.SlotCounter++
-	//n.IncrementPropossalVal()
-	//Add the value to the physical and virtual log
-	n.Log = append(n.Log, msg.AVal)
-	n.writeLog()
+	if msg.AVal == n.AccVal {
+		//Update the node values
+		n.CommitNodeUpdate()
+		//Add the value to the physical and virtual log
+		n.Log = append(n.Log, msg.AVal)
+		n.writeLog()
 
-	//If the entry is a block or unblock, update the dictionary
-	if msg.AVal.Event == INSERT {
-		n.Blocks[msg.AVal.User][msg.AVal.Follower] = true
-	} else if msg.AVal.Event == DELETE {
-		delete(n.Blocks[msg.AVal.User], msg.AVal.Follower)
-		//n.Blocks[msg.AVal.User][msg.AVal.Follower] = false
+		//If the entry is a block or unblock, update the dictionary
+		if msg.AVal.Event == INSERT {
+			n.Blocks[msg.AVal.User][msg.AVal.Follower] = true
+		} else if msg.AVal.Event == DELETE {
+			delete(n.Blocks[msg.AVal.User], msg.AVal.Follower)
+			//n.Blocks[msg.AVal.User][msg.AVal.Follower] = false
+		}
 	}
 	return
 }

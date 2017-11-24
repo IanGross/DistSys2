@@ -14,7 +14,7 @@ func (n *Node) ProposePhase(ety entry) bool {
 	for {
 		n.RecvAcceptedPromise = 0
 		n.CountSiteFailures = 0
-		msg := message{n.Id, PREPARE, n.ProposalVal, ety}
+		msg := message{n.Id, PREPARE, n.ProposalVal, ety, n.SlotCounter}
 		n.BroadCast(msg)
 		/*
 			fmt.Println("Waiting on responses...")
@@ -37,11 +37,6 @@ func (n *Node) ProposePhase(ety entry) bool {
 		} else if n.CountSiteFailures >= n.MajorityVal {
 			fmt.Println("Majority of sites have failed, Event Propossal impossible")
 			return false
-			/*} else if exitBool == true {
-			//REMOVE THIS BLOCK ONCE COMMUNICATION WORKS
-			//if timeout achieved or the propossal was a failure, try another value
-			break
-			*/
 		} else {
 			n.IncrementPropossalVal()
 		}
@@ -52,13 +47,13 @@ func (n *Node) ProposePhase(ety entry) bool {
 func (n *Node) AcceptPhase(ety entry) bool {
 	n.RecvAcceptedAck = 0
 	n.CountSiteFailures = 0
-	msg := message{n.Id, ACCEPT, n.ProposalVal, ety}
+	msg := message{n.Id, ACCEPT, n.ProposalVal, ety, n.SlotCounter}
 	n.BroadCast(msg)
 	fmt.Println("Number of Responses Received:", n.RecvAcceptedAck)
 	//If receive ack from a majority, send commit(v)
 	if n.RecvAcceptedAck >= n.MajorityVal {
 		fmt.Println("Received ack from a majority of sites, sending commit")
-		msg := message{n.Id, COMMIT, n.ProposalVal, ety}
+		msg := message{n.Id, COMMIT, n.ProposalVal, ety, n.SlotCounter}
 		n.BroadCast(msg)
 		n.IncrementPropossalVal()
 		return true

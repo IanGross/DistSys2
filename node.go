@@ -89,8 +89,9 @@ func makeNode(inputfile string, inputID int) *Node {
 		}
 	*/
 	//changed for
-	ret.Log = make([]entry, 0, 10)
 
+	//Create the log and load the entries from the static log
+	ret.Log = make([]entry, 0, 10)
 	if check, err := ret.LoadEntries(staticLog); err != nil || check == false {
 		//create file
 		f, err := os.Create(staticLog)
@@ -101,18 +102,21 @@ func makeNode(inputfile string, inputID int) *Node {
 	}
 
 	//TO DO: implement paxos here to load the missing entries from other sites
+	//- Get and update MaxPrepare, AccNum, AccVal, and SlotCounter
 
+	//Make the dictionary
 	ret.Blocks = make(map[int]map[int]bool)
-
 	for i := 0; i < info.TotalNodes; i++ {
 		ret.Blocks[i] = make(map[int]bool)
 	}
 
-	//TO DO: Update the dictionary based on the log entries
-	//err := ret.LoadDict()
+	//Update the dictionary based on the log entries
+	if err := ret.LoadDict(); err != nil {
+		log.Fatal("Error with dictionary load")
+	}
 
-	ret.IPtargets = make(map[int]string)
 	//Populate the IPtargets
+	ret.IPtargets = make(map[int]string)
 	for keyValue, mapValue := range info.IPs {
 		idInt, _ := strconv.Atoi(keyValue)
 		//if idInt != ret.Id {
@@ -120,8 +124,8 @@ func makeNode(inputfile string, inputID int) *Node {
 		//}
 	}
 
+	//Populate the Names
 	ret.Names = make(map[int]string)
-	//Populate the IPtargets
 	for keyValue, mapValue := range info.Names {
 		idInt, _ := strconv.Atoi(keyValue)
 		//if idInt != ret.Id {
@@ -130,11 +134,6 @@ func makeNode(inputfile string, inputID int) *Node {
 	}
 
 	return ret
-}
-
-func (n *Node) IncrementPropossalVal() {
-	n.ProposalVal += len(n.IPtargets)
-	return
 }
 
 func (n *Node) LoadEntries(filename string) (bool, error) {
@@ -153,21 +152,20 @@ func (n *Node) LoadEntries(filename string) (bool, error) {
 		return false, err
 	}
 
-	//UPDATE NEEDED HERE:
-	// Get and update MaxPrepare, AccNum and AccVal
-
 	return true, nil
 }
 
 func (n *Node) LoadDict() error {
-	//NEW FUNCTION REQUIRED:
-	// Because we are no longer storing a separate log for dictionary values, we need to load the information separately
-	// Get the dictionary from the log
-
-	// Pseudocode:
-	//		Run through the sorted list of log entries
-	//		If the entry is block or unblock, perform the update to local dictionary without sending it to the other locations
-
+	// Get the dictionary information from the log
+	organizedLog := OrganizeEntries(n.Log)
+	logReverse := reverse(organizedLog)
+	for i := 0; i < len(logReverse); i++ {
+		if logReverse[i].Event == INSERT {
+			n.Blocks[logReverse[i].User][logReverse[i].Follower] = true
+		} else if logReverse[i].Event == DELETE {
+			delete(n.Blocks[logReverse[i].User], logReverse[i].Follower)
+		}
+	}
 	return nil
 }
 
@@ -180,4 +178,19 @@ func (n *Node) writeLog() {
 	if err != nil {
 		log.Fatalln("Failed to write to staticlog")
 	}
+}
+
+func (n *Node) IncrementPropossalVal() {
+	n.ProposalVal += len(n.IPtargets)
+	return
+}
+
+func (n *Node) CommitNodeUpdate() {
+	n.SlotCounter++
+	n.MaxPrepare = -1
+	n.AccNum = -1
+	var itt entry
+	n.AccVal = itt
+	n.ProposalVal = n.Id
+	return
 }
