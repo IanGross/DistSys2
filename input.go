@@ -76,8 +76,7 @@ func (localN *Node) ViewTweets() {
 	organizedLog := OrganizeEntries(localN.Log)
 	logReverse := reverse(organizedLog)
 	for i := 0; i < len(logReverse); i++ {
-		//if logReverse[i].Event == 0 && localN.Blocks[localN.Id][logReverse[i].User] == false {
-		if logReverse[i].Event == 0 {
+		if logReverse[i].Event == 0 && localN.Blocks[localN.Id][logReverse[i].User] == false {
 			fmt.Printf(time.Time.String(logReverse[i].Clock) + " - ")
 			fmt.Printf("Propossal value " + strconv.Itoa(logReverse[i].AccNum) + ", ")
 			fmt.Printf("Slot " + strconv.Itoa(logReverse[i].SlotNumber) + " - ")

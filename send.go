@@ -95,7 +95,7 @@ func (n *Node) RecoveryBroadCast(msg message) bool {
 			continue
 		}
 		n.HandleSendAndReceive(ip, i, msg)
-		if n.AccNum > -1 {
+		if n.AccNum > emptyPropossal {
 			msg.AVal = n.AccVal
 			n.recvCommit(msg)
 			return true

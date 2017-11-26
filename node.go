@@ -17,6 +17,8 @@ import (
 //    - This means that the dictionary needs to be retrieved in a different way
 
 const staticLog = "./localLog.json"
+const emptyPropossal = -2
+const leaderPropossal = -1
 
 type Node struct {
 	Id       int
@@ -68,8 +70,8 @@ func makeNode(inputfile string, inputID int) *Node {
 	ret.Id = inputID
 	ret.SiteName = info.Names[strconv.Itoa(ret.Id)]
 	//Set the initial values for these values? Or are they just null?
-	ret.MaxPrepare = -1
-	ret.AccNum = -1
+	ret.MaxPrepare = emptyPropossal
+	ret.AccNum = emptyPropossal
 	var itt entry
 	ret.AccVal = itt
 	ret.ProposalVal = inputID
@@ -228,8 +230,8 @@ func (n *Node) IncrementPropossalVal() {
 
 func (n *Node) CommitNodeUpdate() {
 	n.SlotCounter++
-	n.MaxPrepare = -1
-	n.AccNum = -1
+	n.MaxPrepare = emptyPropossal
+	n.AccNum = emptyPropossal
 	var itt entry
 	n.AccVal = itt
 	n.ProposalVal = n.Id
