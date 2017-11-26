@@ -43,22 +43,37 @@ func (n *Node) receive(conn net.Conn) {
 	case COMMIT:
 		fmt.Printf("Received message from %v - Commit(%v)\n", msg.SendID, msg.AVal)
 		n.recvCommit(msg)
+	case FAIL:
+		fmt.Printf("Received message from %v - Fail (%v)\n", msg.SendID, msg.AVal)
+		n.recvFail(msg)
 	default:
 		fmt.Println("ERROR: The recieved message type is not valid")
 	}
 
 	//provide clarity to user that user input is still available
 	//fmt.Printf("Please enter a Command: ")
+	return
 }
 
 func (n *Node) recvPrepare(msg message, conn net.Conn) {
+	//If the slot is not equal to the proposed message slot, return the AccNum & AccVal of proposed slot
+	//Maybe have a different message type
+
 	if msg.ANum > n.MaxPrepare {
 		n.MaxPrepare = msg.ANum
 
 		//send a new message as a response
 		recvID := msg.SendID
-		msg := message{n.Id, PROMISE, n.AccNum, n.AccVal, n.SlotCounter}
-		n.Send(conn, recvID, msg)
+		msgN := message{n.Id, PROMISE, n.AccNum, n.AccVal, n.SlotCounter}
+		n.Send(conn, recvID, msgN)
+	} else if n.SlotCounter > msg.Slot {
+		//check to see if the value at the position exists (for holes, maybe)
+
+		//If the slot number is less than the current slot number
+		//	return the value at the requested location
+		recvID := msg.SendID
+		msgN := message{n.Id, FAIL, msg.ANum, n.Log[msg.Slot], msg.Slot}
+		n.Send(conn, recvID, msgN)
 	} else {
 		//Possible optimization: Send something back saying that the request failed
 		fmt.Println("MaxPrepare is less than or equal to proposed n. No reponse is being returned")
@@ -109,5 +124,11 @@ func (n *Node) recvCommit(msg message) {
 			//n.Blocks[msg.AVal.User][msg.AVal.Follower] = false
 		}
 	}
+	return
+}
+
+func (n *Node) recvFail(msg message) {
+	n.AccVal = msg.AVal
+	n.AccNum = msg.Slot
 	return
 }

@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 //To Implement:
@@ -82,27 +84,21 @@ func makeNode(inputfile string, inputID int) *Node {
 		log.Fatalln(err)
 	}
 
-	/*
-		ret.Log = make([][]entry, info.TotalNodes)
-		for i := 0; i < info.TotalNodes; i++ {
-			ret.Log[i] = make([]entry, 0, 10)
-		}
-	*/
-	//changed for
-
+	//If log has not ben created before, prevent the recovery algorithm from running (used to prevent initial recovery)
+	//	Assume that all sites start running
+	//		If they don't, then comment this out (VERY IMPORTANT)
+	firstRun := false
 	//Create the log and load the entries from the static log
 	ret.Log = make([]entry, 0, 10)
-	if check, err := ret.LoadEntries(staticLog); err != nil || check == false {
+	if check, exists, err := ret.LoadEntries(staticLog); err != nil || check == false {
 		//create file
 		f, err := os.Create(staticLog)
 		if err != nil {
 			log.Fatal("cannot create log")
 		}
 		f.Close()
+		firstRun = exists
 	}
-
-	//TO DO: implement paxos here to load the missing entries from other sites
-	//- Get and update MaxPrepare, AccNum, AccVal, and SlotCounter
 
 	//Make the dictionary
 	ret.Blocks = make(map[int]map[int]bool)
@@ -133,30 +129,46 @@ func makeNode(inputfile string, inputID int) *Node {
 		//}
 	}
 
+	//Update the SlotCounter
+	ret.SlotCounter = len(ret.Log)
+
+	//Utilize Paxos to recover any missing log entries that might have been missed during site failure
+	if firstRun == false { //Don't do recovery if this is the first time the site has run
+		if recoverCount, err := ret.LearnMissingEntries(); err != nil {
+			log.Println("Error has occured while recovering missing entries")
+		} else {
+			if recoverCount == 1 {
+				fmt.Printf("Site has learned about %v missing entry during recovery\n", recoverCount)
+			} else if recoverCount > 1 {
+				fmt.Printf("Site has learned about %v missing entries during recovery\n", recoverCount)
+			}
+		}
+	}
+
 	return ret
 }
 
-func (n *Node) LoadEntries(filename string) (bool, error) {
+func (n *Node) LoadEntries(filename string) (bool, bool, error) {
 	_, err := os.Stat(staticLog)
 	if os.IsNotExist(err) {
 		log.Println("LOG FILE NOT YET CREATED")
-		return false, nil
+		return false, true, nil
 	}
 
 	file, err := ioutil.ReadFile(staticLog)
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 
 	if err := json.Unmarshal(file, &n.Log); err != nil {
-		return false, err
+		return false, false, err
 	}
 
-	return true, nil
+	return true, false, nil
 }
 
+//LoadDict - Get the dictionary information from the log
 func (n *Node) LoadDict() error {
-	// Get the dictionary information from the log
 	organizedLog := OrganizeEntries(n.Log)
 	logReverse := reverse(organizedLog)
 	for i := 0; i < len(logReverse); i++ {
@@ -178,6 +190,35 @@ func (n *Node) writeLog() {
 	if err != nil {
 		log.Fatalln("Failed to write to staticlog")
 	}
+}
+
+func (n *Node) LearnMissingEntries() (int, error) {
+	//TO DO: implement paxos here to load the missing entries from other sites
+
+	//In this case, assume that there are no holes in the log, so start recovery from the current slot value
+
+	fmt.Println("In recovery function...")
+
+	initialSlotCounter := n.SlotCounter
+	for {
+		ety := entry{"", n.Id, n.Id, time.Now().UTC(), 0, -5, n.SlotCounter}
+		msg := message{n.Id, PREPARE, -5, ety, n.SlotCounter}
+		if foundEntry := n.RecoveryBroadCast(msg); foundEntry == false {
+			return n.SlotCounter - initialSlotCounter, nil
+		}
+		//otherwise, a new value was commited to a log slot and try to find more missing values
+	}
+
+	//Propose a new value
+	//	If the value doesn't recieve anything back, assume that the request has failed and there is nothing in that log slot
+	//	If the value is returned, commit that value to the log and send another propose request
+
+	// Update the recieve.go to return false if nothing is recieved
+	// - Make updates in send.go to correspond with change
+	// -- Maybe create a new function to put the message handling in separate
+	//		- Broadcast modified to send a single message, and if response is heard, commit and stop broadcasting
+	// Update send.go to accomidate the special recovery case
+	return 0, nil
 }
 
 func (n *Node) IncrementPropossalVal() {

@@ -61,7 +61,7 @@ func (n *Node) AcceptPhase(ety entry) bool {
 	return false
 }
 
-//Generate message for send and possible receive
+//BroadCast message for send and possible receive
 func (n *Node) BroadCast(msg message) {
 	//n.NodeMutex.Lock()
 	//defer n.NodeMutex.Unlock()
@@ -87,6 +87,23 @@ func (n *Node) BroadCast(msg message) {
 		n.HandleSendAndReceive(ip, i, msg)
 	}
 	return
+}
+
+func (n *Node) RecoveryBroadCast(msg message) bool {
+	for i, ip := range n.IPtargets {
+		if i == n.Id {
+			continue
+		}
+		n.HandleSendAndReceive(ip, i, msg)
+		if n.AccNum > -1 {
+			msg.AVal = n.AccVal
+			n.recvCommit(msg)
+			return true
+		}
+	}
+	return false
+	//if we have found a value for the slot, commit it (return true)
+	// if we didn't find a value for the slot, exit and don't run again (return false)
 }
 
 func (n *Node) HandleSendAndReceive(ip string, k int, msg message) {

@@ -18,7 +18,7 @@ const ( //iota is reset to 0
 	ACCEPT  = iota
 	ACK     = iota
 	COMMIT  = iota
-	CHECK   = iota
+	FAIL    = iota
 )
 
 //Note: CHECK is for recovery of log
