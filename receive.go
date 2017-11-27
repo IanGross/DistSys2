@@ -26,32 +26,26 @@ func (n *Node) receive(conn net.Conn) {
 	}
 
 	//log.Println("Received message from ", msg.SendID)
+	n.PrintSendReceiveMsg("receieve", msg.SendID, msg.MsgType, msg.ANum, msg.AVal)
 
 	switch recvMsgType := msg.MsgType; recvMsgType {
 	case PREPARE:
-		fmt.Printf("Received message from %v - Propose(%v)\n", msg.SendID, msg.ANum)
 		n.recvPrepare(msg, conn)
 	case PROMISE:
-		fmt.Printf("Received message from %v - Promise(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
 		n.recvPromise(msg)
 	case ACCEPT:
-		fmt.Printf("Received message from %v - Accept(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
 		n.recvAccept(msg, conn)
 	case ACK:
-		fmt.Printf("Received message from %v - Ack(%v,%v)\n", msg.SendID, msg.ANum, msg.AVal)
 		n.recvAck(msg)
 	case COMMIT:
-		fmt.Printf("Received message from %v - Commit(%v)\n", msg.SendID, msg.AVal)
 		n.recvCommit(msg)
+		//provide clarity to user that user input is still available
+		fmt.Printf("Please enter a Command: ")
 	case FAIL:
-		fmt.Printf("Received message from %v - Fail (%v)\n", msg.SendID, msg.AVal)
 		n.recvFail(msg)
 	default:
 		fmt.Println("ERROR: The recieved message type is not valid")
 	}
-
-	//provide clarity to user that user input is still available
-	//fmt.Printf("Please enter a Command: ")
 	return
 }
 
@@ -121,7 +115,6 @@ func (n *Node) recvCommit(msg message) {
 			n.Blocks[msg.AVal.User][msg.AVal.Follower] = true
 		} else if msg.AVal.Event == DELETE {
 			delete(n.Blocks[msg.AVal.User], msg.AVal.Follower)
-			//n.Blocks[msg.AVal.User][msg.AVal.Follower] = false
 		}
 	}
 	return

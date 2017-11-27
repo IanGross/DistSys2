@@ -110,7 +110,7 @@ func (n *Node) HandleSendAndReceive(ip string, k int, msg message) {
 	conn, err := net.Dial("tcp", ip)
 	if err != nil {
 		//log.Println("Failed to connect to ", ip, "  ", err)
-		log.Println("Failed to connect to ", ip, "  -   Acceptor is not alive at this location")
+		log.Println("Failed to connect to ", ip, " -  Acceptor is not alive at this location")
 		n.CountSiteFailures++
 		return
 	}
@@ -127,7 +127,7 @@ func (n *Node) Send(conn net.Conn, k int, msg message) {
 
 	bytes, err := json.Marshal(msg)
 	if err != nil {
-		log.Println("failed to build message for ", k, "   ", err)
+		log.Println("Failed to build message for ", k, "   ", err)
 		return
 	}
 
@@ -136,6 +136,41 @@ func (n *Node) Send(conn net.Conn, k int, msg message) {
 		log.Println("Failed to send message to ", k, "  ", err)
 		return
 	}
-	//log.Println("Successfully sent message to ", k)
+	n.PrintSendReceiveMsg("send", msg.SendID, msg.MsgType, msg.ANum, msg.AVal)
+	return
+}
+
+func (n *Node) PrintSendReceiveMsg(funcType string, pID int, pType int, pNum int, pVal entry) {
+	var pTypeStr string
+	switch pType {
+	case PREPARE:
+		pTypeStr = "Prepare"
+	case PROMISE:
+		pTypeStr = "Promise"
+	case ACCEPT:
+		pTypeStr = "Accept"
+	case ACK:
+		pTypeStr = "Ack"
+	case COMMIT:
+		pTypeStr = "Commit"
+	case FAIL:
+		pTypeStr = "Fail"
+	default:
+		fmt.Println("ERROR: The recieved message type is not valid")
+	}
+
+	if funcType == "send" {
+		fmt.Printf("Sent message to ")
+	} else if funcType == "receieve" {
+		fmt.Printf("Received message from ")
+	}
+	fmt.Printf("%v - %v(", pID, pTypeStr)
+	if pTypeStr == "Prepare" || pTypeStr == "Fail" {
+		fmt.Printf("%v)\n", pNum)
+	} else if pTypeStr == "Promise" || pTypeStr == "Accept" || pTypeStr == "Ack" {
+		fmt.Printf("%v,%v)\n", pNum, pVal)
+	} else if pTypeStr == "Commit" {
+		fmt.Printf("%v)\n", pVal)
+	}
 	return
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -25,7 +24,7 @@ func listen(serv *Node) {
 func handleConn(conn net.Conn, serv *Node) {
 	//n.NodeMutex.Lock()
 	//defer n.NodeMutex.Unlock()
-	fmt.Println("Handling connection request...")
+	//fmt.Println("Handling connection request...")
 	defer conn.Close()
 	serv.receive(conn)
 	//receive may also send a response message, depending on the type of message
