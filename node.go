@@ -149,6 +149,9 @@ func makeNode(inputfile string, inputID int) *Node {
 				fmt.Printf("Site has learned about %v missing entries during recovery\n", recoverCount)
 			}
 		}
+		if len(ret.Log) != 0 {
+			ret.LeaderID = ret.Log[len(ret.Log)-1].User
+		}
 	}
 
 	return ret
