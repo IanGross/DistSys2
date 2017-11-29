@@ -76,7 +76,8 @@ func (localN *Node) ViewTweets() {
 	organizedLog := OrganizeEntries(localN.Log)
 	logReverse := reverse(organizedLog)
 	for i := 0; i < len(logReverse); i++ {
-		if logReverse[i].Event == 0 && localN.Blocks[localN.Id][logReverse[i].User] == false {
+		if logReverse[i].Event == TWEET && !localN.checkBlock(logReverse[i].User, localN.Id) {
+			//why so many Itoas? fmt.Printf("%i", somevalue ) would work
 			fmt.Printf(time.Time.String(logReverse[i].Clock) + " - ")
 			fmt.Printf("Propossal value " + strconv.Itoa(logReverse[i].AccNum) + ", ")
 			fmt.Printf("Slot " + strconv.Itoa(logReverse[i].SlotNumber) + " - ")
@@ -85,6 +86,16 @@ func (localN *Node) ViewTweets() {
 			fmt.Println("")
 		}
 	}
+}
+
+// Do not print tweet if the tweeter has blocked me
+// an ONLY if the tweeter has blocked me
+func (localN *Node) checkBlock(tweeter int, self int) bool {
+	val, ok := localN.Blocks[tweeter][self]
+	if ok {
+		return val
+	}
+	return false
 }
 
 func (localN *Node) ProposeHandler(ety entry) {
