@@ -250,3 +250,10 @@ func (n *Node) CommitNodeUpdate() {
 func (n *Node) AmLeader() bool {
 	return n.Id == n.LeaderID
 }
+
+func (n *Node) getProposeValue() int {
+	if n.AmLeader() {
+		return leaderPropossal
+	}
+	return n.ProposalVal
+}

@@ -47,13 +47,13 @@ func (n *Node) ProposePhase(ety entry) bool {
 func (n *Node) AcceptPhase(ety entry) bool {
 	n.RecvAcceptedAck = 0
 	n.CountSiteFailures = 0
-	msg := message{n.Id, ACCEPT, n.ProposalVal, ety, n.SlotCounter}
+	msg := message{n.Id, ACCEPT, n.getProposeValue(), ety, n.SlotCounter}
 	n.BroadCast(msg)
 	fmt.Println("Number of Responses Received:", n.RecvAcceptedAck)
 	//If receive ack from a majority, send commit(v)
 	if n.RecvAcceptedAck >= n.MajorityVal {
 		fmt.Println("Received ack from a majority of sites, sending commit")
-		msg := message{n.Id, COMMIT, n.ProposalVal, ety, n.SlotCounter}
+		msg := message{n.Id, COMMIT, n.getProposeValue(), ety, n.SlotCounter}
 		n.BroadCast(msg)
 		n.IncrementPropossalVal()
 		return true

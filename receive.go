@@ -84,7 +84,7 @@ func (n *Node) recvPromise(msg message) {
 }
 
 func (n *Node) recvAccept(msg message, conn net.Conn) {
-	if msg.ANum >= n.MaxPrepare {
+	if msg.ANum >= n.MaxPrepare || msg.ANum == leaderPropossal {
 		n.MaxPrepare = msg.ANum
 		n.AccNum = msg.ANum
 		n.AccVal = msg.AVal
