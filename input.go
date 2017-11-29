@@ -79,9 +79,9 @@ func (localN *Node) ViewTweets() {
 		if logReverse[i].Event == TWEET && !localN.checkBlock(logReverse[i].User, localN.Id) {
 			//why so many Itoas? fmt.Printf("%i", somevalue ) would work
 			fmt.Printf(time.Time.String(logReverse[i].Clock) + " - ")
-			fmt.Printf("Propossal value " + strconv.Itoa(logReverse[i].AccNum) + ", ")
-			fmt.Printf("Slot " + strconv.Itoa(logReverse[i].SlotNumber) + " - ")
-			fmt.Printf("User " + strconv.Itoa(logReverse[i].User) + ": ")
+			fmt.Printf("Propossal value %d, ", logReverse[i].AccNum)
+			fmt.Printf("Slot %d - ", logReverse[i].SlotNumber)
+			fmt.Printf("User %d: ", logReverse[i].User)
 			fmt.Printf(logReverse[i].Message)
 			fmt.Println("")
 		}
@@ -99,6 +99,10 @@ func (localN *Node) checkBlock(tweeter int, self int) bool {
 }
 
 func (localN *Node) ProposeHandler(ety entry) {
+	if localN.AmLeader() {
+		localN.LeaderPropseHandler(ety)
+		return
+	}
 	var emptyEntry entry
 	retVal1 := localN.ProposePhase(emptyEntry)
 	if retVal1 == true {
@@ -111,6 +115,16 @@ func (localN *Node) ProposeHandler(ety entry) {
 		}
 	} else if retVal1 == false {
 		fmt.Println("Failure: Propossal was Unsuccessful")
+	}
+}
+
+func (localN *Node) LeaderPropseHandler(ety entry) {
+	ety.AccNum = leaderPropossal
+	check := localN.AcceptPhase(ety)
+	if check == true {
+		fmt.Println("Accept Phase and Commit was successful, proposed entry has been added to the log")
+	} else if check == false {
+		fmt.Println("Failure: Accept phase was unsuccessful")
 	}
 }
 
