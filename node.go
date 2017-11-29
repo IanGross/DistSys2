@@ -35,6 +35,8 @@ type Node struct {
 	SlotCounter         int
 	LeaderID            int
 
+	OutputChannel chan string
+
 	NodeMutex *sync.Mutex
 
 	Log []entry
@@ -78,6 +80,8 @@ func makeNode(inputfile string, inputID int) *Node {
 	ret.MajorityVal = info.TotalNodes/2 + 1
 	ret.SlotCounter = 0
 	ret.LeaderID = info.EntryLeaderID
+
+	ret.OutputChannel = make(chan string)
 
 	parts := strings.Split(info.IPs[strconv.Itoa(ret.Id)], ":")
 	ret.ListenPort, err = strconv.Atoi(parts[1])
@@ -229,6 +233,7 @@ func (n *Node) IncrementPropossalVal() {
 }
 
 func (n *Node) CommitNodeUpdate() {
+	n.LeaderID = n.AccVal.User
 	n.SlotCounter++
 	n.MaxPrepare = emptyPropossal
 	n.AccNum = emptyPropossal
