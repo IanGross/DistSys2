@@ -237,3 +237,7 @@ func (n *Node) CommitNodeUpdate() {
 	n.ProposalVal = n.Id
 	return
 }
+
+func (n *Node) AmLeader() bool {
+	return n.LeaderID == n.Id
+}

@@ -91,6 +91,8 @@ func (n *Node) recvAccept(msg message, conn net.Conn) {
 		recvID := msg.SendID
 		msg := message{n.Id, ACK, n.AccNum, n.AccVal, n.SlotCounter}
 		n.Send(conn, recvID, msg)
+	} else if msg.ANum == -1 { // I know it says zero, but the min ID is zero so... I think we'll live
+		//Leader stuff
 	} else {
 		fmt.Println("MaxPrepare is less than accept value of n. No reponse is being returned")
 	}

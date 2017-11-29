@@ -100,6 +100,9 @@ func (localN *Node) checkBlock(tweeter int, self int) bool {
 
 func (localN *Node) ProposeHandler(ety entry) {
 	var emptyEntry entry
+	if localN.AmLeader() {
+		// move to accept immedalty
+	}
 	retVal1 := localN.ProposePhase(emptyEntry)
 	if retVal1 == true {
 		fmt.Println("Propossal was successful") //add: of value _
