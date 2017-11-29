@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+const (
+	LEADERBYPASS = -91
+)
+
 const ( //iota is reset to 0
 	TWEET  = iota // TWEET=0
 	INSERT = iota // INSERT=1
