@@ -40,12 +40,13 @@ func (n *Node) receive(conn net.Conn) {
 	case COMMIT:
 		n.recvCommit(msg)
 		//provide clarity to user that user input is still available
-		fmt.Printf("Please enter a Command: ")
+		//fmt.Printf("Please enter a Command: ")
 	case FAIL:
 		n.recvFail(msg)
 	default:
 		fmt.Println("ERROR: The recieved message type is not valid")
 	}
+	fmt.Printf("\nPlease enter a Command:")
 	return
 }
 
