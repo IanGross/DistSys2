@@ -136,7 +136,7 @@ func (n *Node) Send(conn net.Conn, k int, msg message) {
 		log.Println("Failed to send message to ", k, "  ", err)
 		return
 	}
-	n.PrintSendReceiveMsg("send", msg.SendID, msg.MsgType, msg.ANum, msg.AVal)
+	n.PrintSendReceiveMsg("send", k, msg.MsgType, msg.ANum, msg.AVal)
 	return
 }
 
