@@ -203,6 +203,11 @@ func (n *Node) writeLog() {
 }
 
 func (n *Node) LearnMissingEntries() (int, error) {
+	//SECTION IS GOING TO BE COMPLETELY CHANGED
+	// Removal of FAIL
+	// changes in recieve.go to check to see what log slot was proposed
+	//	current node will stay the same, but lower slot will act differently
+
 	//TO DO: implement paxos here to load the missing entries from other sites
 
 	//In this case, assume that there are no holes in the log, so start recovery from the current slot value
@@ -211,7 +216,7 @@ func (n *Node) LearnMissingEntries() (int, error) {
 
 	initialSlotCounter := n.SlotCounter
 	for {
-		ety := entry{"", n.Id, n.Id, time.Now().UTC(), 0, -5, n.SlotCounter}
+		ety := entry{"", n.Id, n.Id, time.Now().UTC(), 0, -5, -5, n.SlotCounter}
 		msg := message{n.Id, PREPARE, -5, ety, n.SlotCounter}
 		if foundEntry := n.RecoveryBroadCast(msg); foundEntry == false {
 			return n.SlotCounter - initialSlotCounter, nil

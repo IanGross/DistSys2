@@ -30,6 +30,7 @@ type entry struct {
 	Clock      time.Time
 	Event      int
 	AccNum     int
+	MaxPrepare int
 	SlotNumber int
 	//event is the type (tweet,insert,delete)
 	//EntryVal is the proposed value that was accepted

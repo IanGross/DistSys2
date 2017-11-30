@@ -131,7 +131,7 @@ func (localN *Node) LeaderPropseHandler(ety entry) {
 func (localN *Node) TweetEvent(message string) {
 	//localN.NodeMutex.Lock()
 	//defer localN.NodeMutex.Unlock()
-	ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), 0, localN.ProposalVal, localN.SlotCounter}
+	ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), 0, localN.ProposalVal, localN.ProposalVal, localN.SlotCounter}
 	localN.ProposeHandler(ety)
 }
 
@@ -171,7 +171,7 @@ func (localN *Node) BlockUser(username string) {
 	//localN.NodeMutex.Lock()
 	//defer localN.NodeMutex.Unlock()
 	userID, _ := strconv.Atoi(username)
-	etyBlock := entry{"", localN.Id, userID, time.Now().UTC(), 1, localN.ProposalVal, localN.SlotCounter}
+	etyBlock := entry{"", localN.Id, userID, time.Now().UTC(), 1, localN.ProposalVal, localN.ProposalVal, localN.SlotCounter}
 	localN.ProposeHandler(etyBlock)
 }
 
@@ -183,7 +183,7 @@ func (localN *Node) UnblockUser(username string) {
 	//localN.NodeMutex.Lock()
 	//defer localN.NodeMutex.Unlock()
 	userID, _ := strconv.Atoi(username)
-	etyUnblock := entry{"", localN.Id, userID, time.Now().UTC(), 2, localN.ProposalVal, localN.SlotCounter}
+	etyUnblock := entry{"", localN.Id, userID, time.Now().UTC(), 2, localN.ProposalVal, localN.ProposalVal, localN.SlotCounter}
 	localN.ProposeHandler(etyUnblock)
 }
 
