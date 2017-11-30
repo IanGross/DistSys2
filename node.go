@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 //To Implement:
@@ -139,17 +138,19 @@ func makeNode(inputfile string, inputID int) *Node {
 	ret.SlotCounter = len(ret.Log)
 
 	//Utilize Paxos to recover any missing log entries that might have been missed during site failure
-	if firstRun == false { //Don't do recovery if this is the first time the site has run
-		if recoverCount, err := ret.LearnMissingEntries(); err != nil {
-			log.Println("Error has occured while recovering missing entries")
-		} else {
-			if recoverCount == 1 {
-				fmt.Printf("Site has learned about %v missing entry during recovery\n", recoverCount)
-			} else if recoverCount > 1 {
-				fmt.Printf("Site has learned about %v missing entries during recovery\n", recoverCount)
+	/*
+		if firstRun == false { //Don't do recovery if this is the first time the site has run
+			if recoverCount, err := ret.LearnMissingEntries(); err != nil {
+				log.Println("Error has occured while recovering missing entries")
+			} else {
+				if recoverCount == 1 {
+					fmt.Printf("Site has learned about %v missing entry during recovery\n", recoverCount)
+				} else if recoverCount > 1 {
+					fmt.Printf("Site has learned about %v missing entries during recovery\n", recoverCount)
+				}
 			}
 		}
-	}
+	*/
 	//Checking if leader has already been elected to the node
 	if len(ret.Log) != 0 {
 		ret.LeaderID = ret.Log[len(ret.Log)-1].User
@@ -207,6 +208,7 @@ func (n *Node) LearnMissingEntries() (int, error) {
 	// Removal of FAIL
 	// changes in recieve.go to check to see what log slot was proposed
 	//	current node will stay the same, but lower slot will act differently
+	//  Propose an entry of a special event type that the propose in receive.go will recognize
 
 	//TO DO: implement paxos here to load the missing entries from other sites
 
@@ -216,24 +218,13 @@ func (n *Node) LearnMissingEntries() (int, error) {
 
 	initialSlotCounter := n.SlotCounter
 	for {
-		ety := entry{"", n.Id, n.Id, time.Now().UTC(), 0, -5, -5, n.SlotCounter}
-		msg := message{n.Id, PREPARE, -5, ety, n.SlotCounter}
-		if foundEntry := n.RecoveryBroadCast(msg); foundEntry == false {
+		var etyEmpty entry
+		foundEntry := n.RecoveryProposeHandler(etyEmpty, n.SlotCounter)
+		if foundEntry == false {
 			return n.SlotCounter - initialSlotCounter, nil
 		}
 		//otherwise, a new value was commited to a log slot and try to find more missing values
 	}
-
-	//Propose a new value
-	//	If the value doesn't recieve anything back, assume that the request has failed and there is nothing in that log slot
-	//	If the value is returned, commit that value to the log and send another propose request
-
-	// Update the recieve.go to return false if nothing is recieved
-	// - Make updates in send.go to correspond with change
-	// -- Maybe create a new function to put the message handling in separate
-	//		- Broadcast modified to send a single message, and if response is heard, commit and stop broadcasting
-	// Update send.go to accomidate the special recovery case
-	return 0, nil
 }
 
 func (n *Node) IncrementPropossalVal() {
