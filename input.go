@@ -99,11 +99,12 @@ func (localN *Node) checkBlock(tweeter int, self int) bool {
 }
 
 func (localN *Node) ProposeHandler(ety entry, slotPropose int) {
+	var emptyEty entry
 	if localN.AmLeader() {
 		localN.LeaderPropseHandler(ety, slotPropose)
 		return
 	}
-	retVal1 := localN.ProposePhase(ety, slotPropose)
+	retVal1 := localN.ProposePhase(emptyEty, slotPropose)
 	if retVal1 == true {
 		fmt.Println("Propossal was successful") //add: of value _
 		retVal2 := localN.AcceptPhase(ety, slotPropose)
@@ -119,7 +120,8 @@ func (localN *Node) ProposeHandler(ety entry, slotPropose int) {
 }
 
 func (localN *Node) RecoveryProposeHandler(ety entry, slotPropose int) bool {
-	retVal1 := localN.RecoveryProposePhase(ety, slotPropose)
+	var emptyEty entry
+	retVal1 := localN.RecoveryProposePhase(emptyEty, slotPropose)
 	//Add a separate return that checks to see if any sites have sent back a message that indicates you are all caught up
 	if retVal1 == true {
 		fmt.Println("Propossal was successful") //add: of value _
