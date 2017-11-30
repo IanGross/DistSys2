@@ -8,13 +8,13 @@ import (
 )
 
 //Propose a new propossal number n
-func (n *Node) ProposePhase(ety entry) bool {
+func (n *Node) ProposePhase(ety entry, slotPropose int) bool {
 	//exitBool := false
 	//timeout := time.After(10 * time.Second)
 	for {
 		n.RecvAcceptedPromise = 0
 		n.CountSiteFailures = 0
-		msg := message{n.Id, PREPARE, n.ProposalVal, ety, n.SlotCounter}
+		msg := message{n.Id, PREPARE, n.ProposalVal, ety, slotPropose}
 		n.BroadCast(msg)
 		/*
 			fmt.Println("Waiting on responses...")
@@ -44,16 +44,16 @@ func (n *Node) ProposePhase(ety entry) bool {
 }
 
 //Propose a new propossal number n
-func (n *Node) AcceptPhase(ety entry) bool {
+func (n *Node) AcceptPhase(ety entry, slotPropose int) bool {
 	n.RecvAcceptedAck = 0
 	n.CountSiteFailures = 0
-	msg := message{n.Id, ACCEPT, n.getProposeValue(), ety, n.SlotCounter}
+	msg := message{n.Id, ACCEPT, n.getProposeValue(), ety, slotPropose}
 	n.BroadCast(msg)
 	fmt.Println("Number of Responses Received:", n.RecvAcceptedAck)
 	//If receive ack from a majority, send commit(v)
 	if n.RecvAcceptedAck >= n.MajorityVal {
 		fmt.Println("Received ack from a majority of sites, sending commit")
-		msg := message{n.Id, COMMIT, n.getProposeValue(), ety, n.SlotCounter}
+		msg := message{n.Id, COMMIT, n.getProposeValue(), ety, slotPropose}
 		n.BroadCast(msg)
 		n.IncrementPropossalVal()
 		return true
