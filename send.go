@@ -48,15 +48,14 @@ func (n *Node) RecoveryProposePhase(ety entry, slotPropose int) bool {
 		n.RecvAcceptedPromise = 0
 		n.CountSiteFailures = 0
 		msg := message{n.Id, PREPARE, n.ProposalVal, ety, slotPropose}
-		n.BroadCast(msg)
+		n.RecoveryBroadCast(msg)
 		fmt.Println("Number of Responses Received:", n.RecvAcceptedPromise)
 		if n.RecvAcceptedPromise >= n.MajorityVal {
 			//if the number is achieved, exit, goal complete
 
-			//if the value returned is empty or if the accNum is empty
-			//var emptyEty entry
-			//if emptyPropossal == n.AccVal
-			if n.MaxPrepare == emptyPropossal {
+			//if the value returned is empty, we have encountered the stop condition
+			var emptyEty entry
+			if emptyEty == n.AccVal {
 				fmt.Println("The received responses are empty, propossed slot has not been filled")
 				return false
 			}
@@ -64,6 +63,7 @@ func (n *Node) RecoveryProposePhase(ety entry, slotPropose int) bool {
 			//otherwise, there is something in the accNum and accVal and we want to continue with Paxos
 			return true
 		} else if n.CountSiteFailures >= n.MajorityVal {
+			//Corner case: attempting to recover a site with less than a majority up
 			fmt.Println("Majority of sites have failed, Event Propossal impossible")
 			return false
 		} else {
@@ -118,21 +118,14 @@ func (n *Node) BroadCast(msg message) {
 	return
 }
 
-func (n *Node) RecoveryBroadCast(msg message) bool {
+func (n *Node) RecoveryBroadCast(msg message) {
 	for i, ip := range n.IPtargets {
 		if i == n.Id {
 			continue
 		}
 		n.HandleSendAndReceive(ip, i, msg)
-		if n.AccNum > emptyPropossal {
-			msg.AVal = n.AccVal
-			n.recvCommit(msg)
-			return true
-		}
 	}
 	return false
-	//if we have found a value for the slot, commit it (return true)
-	// if we didn't find a value for the slot, exit and don't run again (return false)
 }
 
 func (n *Node) HandleSendAndReceive(ip string, k int, msg message) {
