@@ -43,6 +43,35 @@ func (n *Node) ProposePhase(ety entry, slotPropose int) bool {
 	}
 }
 
+func (n *Node) RecoveryProposePhase(ety entry, slotPropose int) bool {
+	for {
+		n.RecvAcceptedPromise = 0
+		n.CountSiteFailures = 0
+		msg := message{n.Id, PREPARE, n.ProposalVal, ety, slotPropose}
+		n.BroadCast(msg)
+		fmt.Println("Number of Responses Received:", n.RecvAcceptedPromise)
+		if n.RecvAcceptedPromise >= n.MajorityVal {
+			//if the number is achieved, exit, goal complete
+
+			//if the value returned is empty or if the accNum is empty
+			//var emptyEty entry
+			//if emptyPropossal == n.AccVal
+			if n.MaxPrepare == emptyPropossal {
+				fmt.Println("The received responses are empty, propossed slot has not been filled")
+				return false
+			}
+
+			//otherwise, there is something in the accNum and accVal and we want to continue with Paxos
+			return true
+		} else if n.CountSiteFailures >= n.MajorityVal {
+			fmt.Println("Majority of sites have failed, Event Propossal impossible")
+			return false
+		} else {
+			n.IncrementPropossalVal()
+		}
+	}
+}
+
 //Propose a new propossal number n
 func (n *Node) AcceptPhase(ety entry, slotPropose int) bool {
 	n.RecvAcceptedAck = 0
@@ -55,7 +84,7 @@ func (n *Node) AcceptPhase(ety entry, slotPropose int) bool {
 		fmt.Println("Received ack from a majority of sites, sending commit")
 		msg := message{n.Id, COMMIT, n.getProposeValue(), ety, slotPropose}
 		n.BroadCast(msg)
-		n.IncrementPropossalVal()
+		//n.IncrementPropossalVal()
 		return true
 	}
 	return false

@@ -119,7 +119,7 @@ func (localN *Node) ProposeHandler(ety entry, slotPropose int) {
 }
 
 func (localN *Node) RecoveryProposeHandler(ety entry, slotPropose int) bool {
-	retVal1 := localN.ProposePhase(ety, slotPropose)
+	retVal1 := localN.RecoveryProposePhase(ety, slotPropose)
 	//Add a separate return that checks to see if any sites have sent back a message that indicates you are all caught up
 	if retVal1 == true {
 		fmt.Println("Propossal was successful") //add: of value _
