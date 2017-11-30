@@ -98,16 +98,21 @@ func (localN *Node) checkBlock(tweeter int, self int) bool {
 	return false
 }
 
-func (localN *Node) ProposeHandler(ety entry, slotPropose int) {
-	if localN.AmLeader() {
+func (localN *Node) ProposeHandler(ety entry, slotPropose int, inRecovery bool) {
+	if localN.AmLeader() && inRecovery == false {
 		localN.LeaderPropseHandler(ety, slotPropose)
 		return
 	}
-	var emptyEntry entry
-	retVal1 := localN.ProposePhase(emptyEntry, slotPropose)
+	retVal1 := localN.ProposePhase(ety, slotPropose)
 	if retVal1 == true {
 		fmt.Println("Propossal was successful") //add: of value _
-		retVal2 := localN.AcceptPhase(ety, slotPropose)
+		var retVal2 bool
+		if inRecovery == false {
+			retVal2 = localN.AcceptPhase(ety, slotPropose)
+		} else if inRecovery == true {
+			retVal2 = localN.AcceptPhase(localN.AccVal, slotPropose)
+		}
+
 		if retVal2 == true {
 			fmt.Println("Accept Phase and Commit was successful, proposed entry has been added to the log")
 		} else if retVal2 == false {
@@ -132,7 +137,7 @@ func (localN *Node) TweetEvent(message string) {
 	//localN.NodeMutex.Lock()
 	//defer localN.NodeMutex.Unlock()
 	ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), 0, localN.ProposalVal, localN.ProposalVal, localN.SlotCounter}
-	localN.ProposeHandler(ety, localN.SlotCounter)
+	localN.ProposeHandler(ety, localN.SlotCounter, false)
 }
 
 func (localN *Node) InvalidBlock(username string, blockType int) bool {
@@ -172,7 +177,7 @@ func (localN *Node) BlockUser(username string) {
 	//defer localN.NodeMutex.Unlock()
 	userID, _ := strconv.Atoi(username)
 	etyBlock := entry{"", localN.Id, userID, time.Now().UTC(), 1, localN.ProposalVal, localN.ProposalVal, localN.SlotCounter}
-	localN.ProposeHandler(etyBlock, localN.SlotCounter)
+	localN.ProposeHandler(etyBlock, localN.SlotCounter, false)
 }
 
 func (localN *Node) UnblockUser(username string) {
@@ -184,7 +189,7 @@ func (localN *Node) UnblockUser(username string) {
 	//defer localN.NodeMutex.Unlock()
 	userID, _ := strconv.Atoi(username)
 	etyUnblock := entry{"", localN.Id, userID, time.Now().UTC(), 2, localN.ProposalVal, localN.ProposalVal, localN.SlotCounter}
-	localN.ProposeHandler(etyUnblock, localN.SlotCounter)
+	localN.ProposeHandler(etyUnblock, localN.SlotCounter, false)
 }
 
 func InputHandler(local *Node) {
