@@ -118,7 +118,7 @@ func (localN *Node) ProposeHandler(ety entry, slotPropose int) {
 	}
 }
 
-func (localN *Node) RecoveryProposeHandler(ety entry, slotPropose int) {
+func (localN *Node) RecoveryProposeHandler(ety entry, slotPropose int) bool {
 	retVal1 := localN.ProposePhase(ety, slotPropose)
 	//Add a separate return that checks to see if any sites have sent back a message that indicates you are all caught up
 	if retVal1 == true {
@@ -128,12 +128,16 @@ func (localN *Node) RecoveryProposeHandler(ety entry, slotPropose int) {
 
 		if retVal2 == true {
 			fmt.Println("Accept Phase and Commit was successful, proposed entry has been added to the log")
+			return true
 		} else if retVal2 == false {
 			fmt.Println("Failure: Accept phase was unsuccessful")
+			return false
 		}
 	} else if retVal1 == false {
 		fmt.Println("Failure: Propossal was Unsuccessful")
+		return false
 	}
+	return false
 }
 
 func (localN *Node) LeaderPropseHandler(ety entry, slotPropose int) {
