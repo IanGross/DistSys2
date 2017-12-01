@@ -41,8 +41,6 @@ func (n *Node) receive(conn net.Conn) {
 		n.recvCommit(msg)
 		//provide clarity to user that user input is still available
 		fmt.Printf("Please enter a Command: ")
-	//case FAIL:
-	//	n.recvFail(msg)
 	default:
 		fmt.Println("ERROR: The recieved message type is not valid")
 	}
@@ -142,11 +140,5 @@ func (n *Node) recvCommit(msg message) {
 			delete(n.Blocks[msg.AVal.User], msg.AVal.Follower)
 		}
 	}
-	return
-}
-
-func (n *Node) recvFail(msg message) {
-	n.AccVal = msg.AVal
-	n.AccNum = msg.Slot
 	return
 }

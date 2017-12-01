@@ -195,8 +195,6 @@ func (n *Node) PrintSendReceiveMsg(funcType string, pID int, pType int, pNum int
 		pTypeStr = "Ack"
 	case COMMIT:
 		pTypeStr = "Commit"
-	case FAIL:
-		pTypeStr = "Fail"
 	default:
 		fmt.Println("ERROR: The recieved message type is not valid")
 	}
@@ -207,7 +205,7 @@ func (n *Node) PrintSendReceiveMsg(funcType string, pID int, pType int, pNum int
 		fmt.Printf("Received message from ")
 	}
 	fmt.Printf("%v - %v(", pID, pTypeStr)
-	if pTypeStr == "Prepare" || pTypeStr == "Fail" {
+	if pTypeStr == "Prepare" {
 		fmt.Printf("%v)\n", pNum)
 	} else if pTypeStr == "Promise" || pTypeStr == "Accept" || pTypeStr == "Ack" {
 		fmt.Printf("%v,%v)\n", pNum, pVal)
