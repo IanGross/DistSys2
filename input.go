@@ -107,6 +107,9 @@ func (localN *Node) ProposeHandler(ety entry, slotPropose int) {
 	retVal1 := localN.ProposePhase(emptyEty, slotPropose)
 	if retVal1 == true {
 		fmt.Println("Propossal was successful") //add: of value _
+		//Update the entry's accNum and MaxPrepare
+		ety.AccNum = localN.ProposalVal
+		ety.MaxPrepare = localN.ProposalVal
 		retVal2 := localN.AcceptPhase(ety, slotPropose)
 
 		if retVal2 == true {

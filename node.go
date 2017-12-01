@@ -134,6 +134,11 @@ func makeNode(inputfile string, inputID int) *Node {
 		//}
 	}
 
+	//Checking if leader has already been elected to the node
+	if len(ret.Log) != 0 {
+		ret.LeaderID = ret.Log[len(ret.Log)-1].User
+	}
+
 	//Update the SlotCounter
 	ret.SlotCounter = len(ret.Log)
 
@@ -144,14 +149,10 @@ func makeNode(inputfile string, inputID int) *Node {
 		} else {
 			if recoverCount == 1 {
 				fmt.Printf("Site has learned about %v missing entry during recovery\n", recoverCount)
-			} else if recoverCount > 1 {
+			} else if recoverCount > 1 || recoverCount == 0 {
 				fmt.Printf("Site has learned about %v missing entries during recovery\n", recoverCount)
 			}
 		}
-	}
-	//Checking if leader has already been elected to the node
-	if len(ret.Log) != 0 {
-		ret.LeaderID = ret.Log[len(ret.Log)-1].User
 	}
 
 	return ret

@@ -59,14 +59,12 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 	//	Send a message back with an empty entry object
 
 	//THE ISSUE IS HERE
-	if msg.Slot == n.SlotCounter {
-		if msg.ANum > n.MaxPrepare {
-			n.MaxPrepare = msg.ANum
-			//send a new message as a response
-			recvID := msg.SendID
-			msgN := message{n.Id, PROMISE, n.AccNum, n.AccVal, n.SlotCounter}
-			n.Send(conn, recvID, msgN)
-		}
+	if msg.Slot == n.SlotCounter && msg.ANum > n.MaxPrepare {
+		n.MaxPrepare = msg.ANum
+		//send a new message as a response
+		recvID := msg.SendID
+		msgN := message{n.Id, PROMISE, n.AccNum, n.AccVal, n.SlotCounter}
+		n.Send(conn, recvID, msgN)
 	} else if msg.Slot < n.SlotCounter {
 		//DO NOT MOVE TO FIRST ELSE STATEMENT WITH AN &&
 		//IT WILL CAUSE AN OUT OF INDEX RANGE ERROR
@@ -76,6 +74,8 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 			recvID := msg.SendID
 			msgN := message{n.Id, PROMISE, n.Log[msg.Slot].MaxPrepare, n.Log[msg.Slot], msg.Slot}
 			n.Send(conn, recvID, msgN)
+		} else {
+			fmt.Println("MaxPrepare is less than or equal to proposed n (LOWER LOG SLOT). No reponse is being returned")
 		}
 	} else {
 		//Possible optimization: Send something back saying that the request failed

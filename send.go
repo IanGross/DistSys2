@@ -72,7 +72,7 @@ func (n *Node) RecoveryProposePhase(ety entry, slotPropose int) bool {
 			//if the value returned is empty, we have encountered the stop condition
 			var emptyEty entry
 			if emptyEty == n.AccVal {
-				fmt.Println("The received responses are empty, propossed slot has not been filled")
+				fmt.Println("The received responses are empty, propossed slot has not been filled (EXITING RECOVERY)")
 				return false
 			}
 
@@ -102,7 +102,7 @@ func (n *Node) RecoveryAcceptPhase(ety entry, slotPropose int) bool {
 
 		//Because there is an issue when we try to send the message to ourself...
 		//	we are just going to directly commit the message
-		//n.BroadCast(msg)
+		//n.RecoveryBroadCast(msg)
 		//n.HandleSendAndReceive(n.IPtargets[n.Id], n.Id, msg)
 		n.recvCommit(msg)
 		return true
