@@ -138,19 +138,17 @@ func makeNode(inputfile string, inputID int) *Node {
 	ret.SlotCounter = len(ret.Log)
 
 	//Utilize Paxos to recover any missing log entries that might have been missed during site failure
-	/*
-		if firstRun == false { //Don't do recovery if this is the first time the site has run
-			if recoverCount, err := ret.LearnMissingEntries(); err != nil {
-				log.Println("Error has occured while recovering missing entries")
-			} else {
-				if recoverCount == 1 {
-					fmt.Printf("Site has learned about %v missing entry during recovery\n", recoverCount)
-				} else if recoverCount > 1 {
-					fmt.Printf("Site has learned about %v missing entries during recovery\n", recoverCount)
-				}
+	if firstRun == false { //Don't do recovery if this is the first time the site has run
+		if recoverCount, err := ret.LearnMissingEntries(); err != nil {
+			log.Println("Error has occured while recovering missing entries")
+		} else {
+			if recoverCount == 1 {
+				fmt.Printf("Site has learned about %v missing entry during recovery\n", recoverCount)
+			} else if recoverCount > 1 {
+				fmt.Printf("Site has learned about %v missing entries during recovery\n", recoverCount)
 			}
 		}
-	*/
+	}
 	//Checking if leader has already been elected to the node
 	if len(ret.Log) != 0 {
 		ret.LeaderID = ret.Log[len(ret.Log)-1].User

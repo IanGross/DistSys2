@@ -43,35 +43,6 @@ func (n *Node) ProposePhase(ety entry, slotPropose int) bool {
 	}
 }
 
-func (n *Node) RecoveryProposePhase(ety entry, slotPropose int) bool {
-	for {
-		n.RecvAcceptedPromise = 0
-		n.CountSiteFailures = 0
-		msg := message{n.Id, PREPARE, n.ProposalVal, ety, slotPropose}
-		n.RecoveryBroadCast(msg)
-		fmt.Println("Number of Responses Received:", n.RecvAcceptedPromise)
-		if n.RecvAcceptedPromise >= n.MajorityVal {
-			//if the number is achieved, exit, goal complete
-
-			//if the value returned is empty, we have encountered the stop condition
-			var emptyEty entry
-			if emptyEty == n.AccVal {
-				fmt.Println("The received responses are empty, propossed slot has not been filled")
-				return false
-			}
-
-			//otherwise, there is something in the accNum and accVal and we want to continue with Paxos
-			return true
-		} else if n.CountSiteFailures >= n.MajorityVal {
-			//Corner case: attempting to recover a site with less than a majority up
-			fmt.Println("Majority of sites have failed, Event Propossal impossible")
-			return false
-		} else {
-			n.IncrementPropossalVal()
-		}
-	}
-}
-
 //Propose a new propossal number n
 func (n *Node) AcceptPhase(ety entry, slotPropose int) bool {
 	n.RecvAcceptedAck = 0
@@ -84,7 +55,56 @@ func (n *Node) AcceptPhase(ety entry, slotPropose int) bool {
 		fmt.Println("Received ack from a majority of sites, sending commit")
 		msg := message{n.Id, COMMIT, n.getProposeValue(), ety, slotPropose}
 		n.BroadCast(msg)
-		//n.IncrementPropossalVal()
+		return true
+	}
+	return false
+}
+
+func (n *Node) RecoveryProposePhase(ety entry, slotPropose int) bool {
+	for {
+		n.RecvAcceptedPromise = 0
+		n.CountSiteFailures = 0
+		msg := message{n.Id, PREPARE, n.ProposalVal, ety, slotPropose}
+		n.RecoveryBroadCast(msg)
+		fmt.Println("Number of Responses Received:", n.RecvAcceptedPromise)
+
+		if n.RecvAcceptedPromise >= n.MajorityVal {
+			//if the value returned is empty, we have encountered the stop condition
+			var emptyEty entry
+			if emptyEty == n.AccVal {
+				fmt.Println("The received responses are empty, propossed slot has not been filled")
+				return false
+			}
+
+			//Otherwise, there is something in the accNum and accVal and we want to continue with Paxos (goal complete)
+			return true
+		} else if n.CountSiteFailures >= n.MajorityVal {
+			//Corner case: attempting to recover a site with less than a majority up
+			fmt.Println("Majority of sites have failed, Event Propossal impossible")
+			return false
+		} else {
+			n.IncrementPropossalVal()
+		}
+	}
+}
+
+//Propose a new propossal number n
+func (n *Node) RecoveryAcceptPhase(ety entry, slotPropose int) bool {
+	n.RecvAcceptedAck = 0
+	n.CountSiteFailures = 0
+	msg := message{n.Id, ACCEPT, n.getProposeValue(), ety, slotPropose}
+	n.RecoveryBroadCast(msg)
+	fmt.Println("Number of Responses Received:", n.RecvAcceptedAck)
+	//If receive ack from a majority, send commit(v)
+	if n.RecvAcceptedAck >= n.MajorityVal {
+		fmt.Println("Received ack from a majority of sites, sending commit")
+		msg := message{n.Id, COMMIT, n.getProposeValue(), ety, slotPropose}
+
+		//Because there is an issue when we try to send the message to ourself...
+		//	we are just going to directly commit the message
+		//n.BroadCast(msg)
+		//n.HandleSendAndReceive(n.IPtargets[n.Id], n.Id, msg)
+		n.recvCommit(msg)
 		return true
 	}
 	return false
@@ -125,7 +145,7 @@ func (n *Node) RecoveryBroadCast(msg message) {
 		}
 		n.HandleSendAndReceive(ip, i, msg)
 	}
-	return false
+	return
 }
 
 func (n *Node) HandleSendAndReceive(ip string, k int, msg message) {

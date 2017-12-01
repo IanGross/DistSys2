@@ -41,8 +41,8 @@ func (n *Node) receive(conn net.Conn) {
 		n.recvCommit(msg)
 		//provide clarity to user that user input is still available
 		fmt.Printf("Please enter a Command: ")
-	case FAIL:
-		n.recvFail(msg)
+	//case FAIL:
+	//	n.recvFail(msg)
 	default:
 		fmt.Println("ERROR: The recieved message type is not valid")
 	}
@@ -55,21 +55,28 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 	//If the slot is not equal to the proposed message slot, return the AccNum & AccVal of proposed slot
 	//Maybe have a different message type
 
-	if msg.ANum > n.MaxPrepare {
-		n.MaxPrepare = msg.ANum
+	//If the message is the current value, but the entry is empty, send the empty val back to signal this information
+	//	Send a message back with an empty entry object
 
-		//send a new message as a response
-		recvID := msg.SendID
-		msgN := message{n.Id, PROMISE, n.AccNum, n.AccVal, n.SlotCounter}
-		n.Send(conn, recvID, msgN)
-	} else if n.SlotCounter > msg.Slot {
-		//check to see if the value at the position exists (for holes, maybe)
-
-		//If the slot number is less than the current slot number
-		//	return the value at the requested location
-		recvID := msg.SendID
-		msgN := message{n.Id, FAIL, msg.ANum, n.Log[msg.Slot], msg.Slot}
-		n.Send(conn, recvID, msgN)
+	//THE ISSUE IS HERE
+	if msg.Slot == n.SlotCounter {
+		if msg.ANum > n.MaxPrepare {
+			n.MaxPrepare = msg.ANum
+			//send a new message as a response
+			recvID := msg.SendID
+			msgN := message{n.Id, PROMISE, n.AccNum, n.AccVal, n.SlotCounter}
+			n.Send(conn, recvID, msgN)
+		}
+	} else if msg.Slot < n.SlotCounter {
+		//DO NOT MOVE TO FIRST ELSE STATEMENT WITH AN &&
+		//IT WILL CAUSE AN OUT OF INDEX RANGE ERROR
+		if msg.ANum > n.Log[msg.Slot].MaxPrepare {
+			//Recovery case
+			n.Log[msg.Slot].MaxPrepare = msg.ANum
+			recvID := msg.SendID
+			msgN := message{n.Id, PROMISE, n.Log[msg.Slot].MaxPrepare, n.Log[msg.Slot], msg.Slot}
+			n.Send(conn, recvID, msgN)
+		}
 	} else {
 		//Possible optimization: Send something back saying that the request failed
 		fmt.Println("MaxPrepare is less than or equal to proposed n. No reponse is being returned")
@@ -79,12 +86,17 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 }
 
 func (n *Node) recvPromise(msg message) {
+	//The setting of the accVal is only included for telling the recovering site
+	//	that there is nothing at the location it's trying to read.
+	//Otherwise, we can assume, the AccVal will be set to the actual value after receiving accept
+	n.AccVal = msg.AVal
 	n.RecvAcceptedPromise++
 	return
 }
 
 func (n *Node) recvAccept(msg message, conn net.Conn) {
-	if msg.ANum >= n.MaxPrepare || msg.ANum == leaderPropossal {
+	//If it's a different slot, change the MaxPrepare, AccNum, and AccVal of the specified log slot
+	if (msg.ANum >= n.MaxPrepare && msg.Slot == n.SlotCounter) || msg.ANum == leaderPropossal {
 		n.MaxPrepare = msg.ANum
 		n.AccNum = msg.ANum
 		n.AccVal = msg.AVal
@@ -93,6 +105,14 @@ func (n *Node) recvAccept(msg message, conn net.Conn) {
 		recvID := msg.SendID
 		msg := message{n.Id, ACK, n.AccNum, n.AccVal, n.SlotCounter}
 		n.Send(conn, recvID, msg)
+	} else if msg.ANum >= n.Log[msg.Slot].MaxPrepare && msg.Slot < n.SlotCounter {
+		//Recovery case
+		n.Log[msg.Slot].MaxPrepare = msg.ANum
+		n.Log[msg.Slot].AccNum = msg.ANum
+
+		recvID := msg.SendID
+		msgN := message{n.Id, ACK, n.Log[msg.Slot].MaxPrepare, n.Log[msg.Slot], msg.Slot}
+		n.Send(conn, recvID, msgN)
 	} else {
 		fmt.Println("MaxPrepare is less than accept value of n. No reponse is being returned")
 	}
@@ -105,7 +125,10 @@ func (n *Node) recvAck(msg message) {
 }
 
 func (n *Node) recvCommit(msg message) {
-	if msg.AVal == n.AccVal {
+	//Check for if the propossal msg is of different log slot (instead of this if statement)
+	// If you have recieved a commit for a log slot you have already committed, update the AccNum & AccVal at log location
+	//if msg.AVal == n.AccVal
+	if msg.Slot == n.SlotCounter {
 		//Update the node values
 		n.CommitNodeUpdate()
 		//Add the value to the physical and virtual log

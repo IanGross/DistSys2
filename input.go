@@ -126,7 +126,7 @@ func (localN *Node) RecoveryProposeHandler(ety entry, slotPropose int) bool {
 	if retVal1 == true {
 		fmt.Println("Propossal was successful") //add: of value _
 		//The recieved value is stored in accVal, so use that instead of your own
-		retVal2 := localN.AcceptPhase(localN.AccVal, slotPropose)
+		retVal2 := localN.RecoveryAcceptPhase(localN.AccVal, slotPropose)
 
 		if retVal2 == true {
 			fmt.Println("Accept Phase and Commit was successful, proposed entry has been added to the log")
@@ -201,7 +201,7 @@ func (localN *Node) BlockUser(username string) {
 
 func (localN *Node) UnblockUser(username string) {
 	if localN.InvalidBlock(username, 2) == true {
-		log.Println("Invalid Block Call")
+		log.Println("Invalid UnBlock Call")
 		return
 	}
 	//localN.NodeMutex.Lock()
