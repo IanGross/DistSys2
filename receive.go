@@ -25,6 +25,7 @@ func (n *Node) receive(conn net.Conn) {
 		return
 	}
 
+	//log.Println("Received message from ", msg.SendID)
 	n.PrintSendReceiveMsg("receieve", msg.SendID, msg.MsgType, msg.ANum, msg.AVal)
 
 	switch recvMsgType := msg.MsgType; recvMsgType {
@@ -55,6 +56,7 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 	//If the message is the current value, but the entry is empty, send the empty val back to signal this information
 	//	Send a message back with an empty entry object
 
+	//THE ISSUE IS HERE
 	if msg.Slot == n.SlotCounter && msg.ANum > n.MaxPrepare {
 		n.MaxPrepare = msg.ANum
 		//send a new message as a response
@@ -62,8 +64,8 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 		msgN := message{n.Id, PROMISE, n.AccNum, n.AccVal, n.SlotCounter}
 		n.Send(conn, recvID, msgN)
 	} else if msg.Slot < n.SlotCounter {
-		//DO NOT MOVE msg.ANum > n.Log[msg.Slot].MaxPrepare TO ELSE IF STATEMENT
-		//	IT WILL CAUSE AN OUT OF INDEX RANGE ERROR
+		//DO NOT MOVE TO FIRST ELSE STATEMENT WITH AN &&
+		//IT WILL CAUSE AN OUT OF INDEX RANGE ERROR
 		if msg.ANum > n.Log[msg.Slot].MaxPrepare {
 			//Recovery case
 			n.Log[msg.Slot].MaxPrepare = msg.ANum
@@ -74,8 +76,10 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 			fmt.Println("MaxPrepare is less than or equal to proposed n (LOWER LOG SLOT). No reponse is being returned")
 		}
 	} else {
+		//Possible optimization: Send something back saying that the request failed
 		fmt.Println("MaxPrepare is less than or equal to proposed n. No reponse is being returned")
 	}
+	//TO DO: Add another if statement that won't respond to the request if it already accepted another one
 	return
 }
 

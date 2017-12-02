@@ -9,11 +9,27 @@ import (
 
 //Propose a new propossal number n
 func (n *Node) ProposePhase(ety entry, slotPropose int) bool {
+	//exitBool := false
+	//timeout := time.After(10 * time.Second)
 	for {
 		n.RecvAcceptedPromise = 0
 		n.CountSiteFailures = 0
 		msg := message{n.Id, PREPARE, n.ProposalVal, ety, slotPropose}
 		n.BroadCast(msg)
+		/*
+			fmt.Println("Waiting on responses...")
+			select {
+			//Wait to hear back from everyone
+			case <-timeout:
+				exitBool = true
+				fmt.Println("Timeout")
+			default:
+				//This section may not be necessary
+				if n.RecvAcceptedPromise+n.RecvNotAcceptedPromise+n.CountSiteFailures == len(n.IPtargets) {
+					break
+				}
+			}
+		*/
 		fmt.Println("Number of Responses Received:", n.RecvAcceptedPromise)
 		if n.RecvAcceptedPromise >= n.MajorityVal {
 			//if the number is achieved, exit, goal complete
@@ -99,6 +115,16 @@ func (n *Node) BroadCast(msg message) {
 	//n.NodeMutex.Lock()
 	//defer n.NodeMutex.Unlock()
 	for i, ip := range n.IPtargets {
+		//fmt.Println(i, ip)
+
+		//Don't bother sending it to another location if the current acceptor is at this process (Remove this code, or don't)
+		/*
+			if i == n.Id {
+				if msg.MsgType == PREPARE {
+					go n.recvPromise(msg)
+				}
+				continue
+			}*/
 		/*
 			// Dictionary block code (to be re-added once paxos implementation is complete, or not, I don't know yet)
 			if ok := n.Blocks[n.Id][i]; ok {
