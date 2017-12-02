@@ -98,14 +98,6 @@ func (localN *Node) checkBlock(tweeter int, self int) bool {
 	return false
 }
 
-<<<<<<< HEAD
-func (localN *Node) ProposeHandler(ety entry) {
-	var emptyEntry entry
-	if localN.AmLeader() {
-		// move to accept immedalty
-	}
-	retVal1 := localN.ProposePhase(emptyEntry)
-=======
 func (localN *Node) ProposeHandler(ety entry, slotPropose int) {
 	var emptyEty entry
 	if localN.AmLeader() {
@@ -134,7 +126,6 @@ func (localN *Node) RecoveryProposeHandler(ety entry, slotPropose int) bool {
 	var emptyEty entry
 	retVal1 := localN.RecoveryProposePhase(emptyEty, slotPropose)
 	//Add a separate return that checks to see if any sites have sent back a message that indicates you are all caught up
->>>>>>> 3e970628d79223ea7c4dc70765621e6a28484f93
 	if retVal1 == true {
 		fmt.Println("Propossal was successful") //add: of value _
 		//The recieved value is stored in accVal, so use that instead of your own

@@ -99,10 +99,6 @@ func (n *Node) recvAccept(msg message, conn net.Conn) {
 		recvID := msg.SendID
 		msg := message{n.Id, ACK, n.AccNum, n.AccVal, n.SlotCounter}
 		n.Send(conn, recvID, msg)
-<<<<<<< HEAD
-	} else if msg.ANum == -1 { // I know it says zero, but the min ID is zero so... I think we'll live
-		//Leader stuff
-=======
 	} else if msg.ANum >= n.Log[msg.Slot].MaxPrepare && msg.Slot < n.SlotCounter {
 		//Recovery case
 		n.Log[msg.Slot].MaxPrepare = msg.ANum
@@ -111,7 +107,6 @@ func (n *Node) recvAccept(msg message, conn net.Conn) {
 		recvID := msg.SendID
 		msgN := message{n.Id, ACK, n.Log[msg.Slot].MaxPrepare, n.Log[msg.Slot], msg.Slot}
 		n.Send(conn, recvID, msgN)
->>>>>>> 3e970628d79223ea7c4dc70765621e6a28484f93
 	} else {
 		fmt.Println("MaxPrepare is less than accept value of n. No reponse is being returned")
 	}

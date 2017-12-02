@@ -243,9 +243,6 @@ func (n *Node) CommitNodeUpdate() {
 }
 
 func (n *Node) AmLeader() bool {
-<<<<<<< HEAD
-	return n.LeaderID == n.Id
-=======
 	return n.Id == n.LeaderID
 }
 
@@ -254,5 +251,4 @@ func (n *Node) getProposeValue() int {
 		return leaderPropossal
 	}
 	return n.ProposalVal
->>>>>>> 3e970628d79223ea7c4dc70765621e6a28484f93
 }
