@@ -79,9 +79,9 @@ func (localN *Node) ViewTweets() {
 		if logReverse[i].Event == TWEET && !localN.checkBlock(logReverse[i].User, localN.Id) {
 			//why so many Itoas? fmt.Printf("%i", somevalue ) would work
 			fmt.Printf(time.Time.String(logReverse[i].Clock) + " - ")
-			fmt.Printf("Propossal value " + strconv.Itoa(logReverse[i].AccNum) + ", ")
-			fmt.Printf("Slot " + strconv.Itoa(logReverse[i].SlotNumber) + " - ")
-			fmt.Printf("User " + strconv.Itoa(logReverse[i].User) + ": ")
+			fmt.Printf("Propossal value %d, ", logReverse[i].AccNum)
+			fmt.Printf("Slot %d - ", logReverse[i].SlotNumber)
+			fmt.Printf("User %d: ", logReverse[i].User)
 			fmt.Printf(logReverse[i].Message)
 			fmt.Println("")
 		}
@@ -98,15 +98,28 @@ func (localN *Node) checkBlock(tweeter int, self int) bool {
 	return false
 }
 
+<<<<<<< HEAD
 func (localN *Node) ProposeHandler(ety entry) {
 	var emptyEntry entry
 	if localN.AmLeader() {
 		// move to accept immedalty
 	}
 	retVal1 := localN.ProposePhase(emptyEntry)
+=======
+func (localN *Node) ProposeHandler(ety entry, slotPropose int) {
+	var emptyEty entry
+	if localN.AmLeader() {
+		localN.LeaderPropseHandler(ety, slotPropose)
+		return
+	}
+	retVal1 := localN.ProposePhase(emptyEty, slotPropose)
 	if retVal1 == true {
 		fmt.Println("Propossal was successful") //add: of value _
-		retVal2 := localN.AcceptPhase(ety)
+		//Update the entry's accNum and MaxPrepare
+		ety.AccNum = localN.ProposalVal
+		ety.MaxPrepare = localN.ProposalVal
+		retVal2 := localN.AcceptPhase(ety, slotPropose)
+
 		if retVal2 == true {
 			fmt.Println("Accept Phase and Commit was successful, proposed entry has been added to the log")
 		} else if retVal2 == false {
@@ -117,11 +130,45 @@ func (localN *Node) ProposeHandler(ety entry) {
 	}
 }
 
+func (localN *Node) RecoveryProposeHandler(ety entry, slotPropose int) bool {
+	var emptyEty entry
+	retVal1 := localN.RecoveryProposePhase(emptyEty, slotPropose)
+	//Add a separate return that checks to see if any sites have sent back a message that indicates you are all caught up
+>>>>>>> 3e970628d79223ea7c4dc70765621e6a28484f93
+	if retVal1 == true {
+		fmt.Println("Propossal was successful") //add: of value _
+		//The recieved value is stored in accVal, so use that instead of your own
+		retVal2 := localN.RecoveryAcceptPhase(localN.AccVal, slotPropose)
+
+		if retVal2 == true {
+			fmt.Println("Accept Phase and Commit was successful, proposed entry has been added to the log")
+			return true
+		} else if retVal2 == false {
+			fmt.Println("Failure: Accept phase was unsuccessful")
+			return false
+		}
+	} else if retVal1 == false {
+		fmt.Println("Failure: Propossal was Unsuccessful")
+		return false
+	}
+	return false
+}
+
+func (localN *Node) LeaderPropseHandler(ety entry, slotPropose int) {
+	ety.AccNum = leaderPropossal
+	check := localN.AcceptPhase(ety, slotPropose)
+	if check == true {
+		fmt.Println("Accept Phase and Commit was successful, proposed entry has been added to the log")
+	} else if check == false {
+		fmt.Println("Failure: Accept phase was unsuccessful")
+	}
+}
+
 func (localN *Node) TweetEvent(message string) {
 	//localN.NodeMutex.Lock()
 	//defer localN.NodeMutex.Unlock()
-	ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), 0, localN.ProposalVal, localN.SlotCounter}
-	localN.ProposeHandler(ety)
+	ety := entry{message, localN.Id, localN.Id, time.Now().UTC(), 0, localN.ProposalVal, localN.ProposalVal, localN.SlotCounter}
+	localN.ProposeHandler(ety, localN.SlotCounter)
 }
 
 func (localN *Node) InvalidBlock(username string, blockType int) bool {
@@ -160,20 +207,20 @@ func (localN *Node) BlockUser(username string) {
 	//localN.NodeMutex.Lock()
 	//defer localN.NodeMutex.Unlock()
 	userID, _ := strconv.Atoi(username)
-	etyBlock := entry{"", localN.Id, userID, time.Now().UTC(), 1, localN.ProposalVal, localN.SlotCounter}
-	localN.ProposeHandler(etyBlock)
+	etyBlock := entry{"", localN.Id, userID, time.Now().UTC(), 1, localN.ProposalVal, localN.ProposalVal, localN.SlotCounter}
+	localN.ProposeHandler(etyBlock, localN.SlotCounter)
 }
 
 func (localN *Node) UnblockUser(username string) {
 	if localN.InvalidBlock(username, 2) == true {
-		log.Println("Invalid Block Call")
+		log.Println("Invalid UnBlock Call")
 		return
 	}
 	//localN.NodeMutex.Lock()
 	//defer localN.NodeMutex.Unlock()
 	userID, _ := strconv.Atoi(username)
-	etyUnblock := entry{"", localN.Id, userID, time.Now().UTC(), 2, localN.ProposalVal, localN.SlotCounter}
-	localN.ProposeHandler(etyUnblock)
+	etyUnblock := entry{"", localN.Id, userID, time.Now().UTC(), 2, localN.ProposalVal, localN.ProposalVal, localN.SlotCounter}
+	localN.ProposeHandler(etyUnblock, localN.SlotCounter)
 }
 
 func InputHandler(local *Node) {

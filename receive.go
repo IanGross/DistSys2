@@ -25,7 +25,6 @@ func (n *Node) receive(conn net.Conn) {
 		return
 	}
 
-	//log.Println("Received message from ", msg.SendID)
 	n.PrintSendReceiveMsg("receieve", msg.SendID, msg.MsgType, msg.ANum, msg.AVal)
 
 	switch recvMsgType := msg.MsgType; recvMsgType {
@@ -41,11 +40,11 @@ func (n *Node) receive(conn net.Conn) {
 		n.recvCommit(msg)
 		//provide clarity to user that user input is still available
 		fmt.Printf("Please enter a Command: ")
-	case FAIL:
-		n.recvFail(msg)
 	default:
 		fmt.Println("ERROR: The recieved message type is not valid")
 	}
+	//Not clever
+	//fmt.Printf("\nPlease enter a Command:")
 	return
 }
 
@@ -53,36 +52,45 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 	//If the slot is not equal to the proposed message slot, return the AccNum & AccVal of proposed slot
 	//Maybe have a different message type
 
-	if msg.ANum > n.MaxPrepare {
-		n.MaxPrepare = msg.ANum
+	//If the message is the current value, but the entry is empty, send the empty val back to signal this information
+	//	Send a message back with an empty entry object
 
+	if msg.Slot == n.SlotCounter && msg.ANum > n.MaxPrepare {
+		n.MaxPrepare = msg.ANum
 		//send a new message as a response
 		recvID := msg.SendID
 		msgN := message{n.Id, PROMISE, n.AccNum, n.AccVal, n.SlotCounter}
 		n.Send(conn, recvID, msgN)
-	} else if n.SlotCounter > msg.Slot {
-		//check to see if the value at the position exists (for holes, maybe)
-
-		//If the slot number is less than the current slot number
-		//	return the value at the requested location
-		recvID := msg.SendID
-		msgN := message{n.Id, FAIL, msg.ANum, n.Log[msg.Slot], msg.Slot}
-		n.Send(conn, recvID, msgN)
+	} else if msg.Slot < n.SlotCounter {
+		//DO NOT MOVE msg.ANum > n.Log[msg.Slot].MaxPrepare TO ELSE IF STATEMENT
+		//	IT WILL CAUSE AN OUT OF INDEX RANGE ERROR
+		if msg.ANum > n.Log[msg.Slot].MaxPrepare {
+			//Recovery case
+			n.Log[msg.Slot].MaxPrepare = msg.ANum
+			recvID := msg.SendID
+			msgN := message{n.Id, PROMISE, n.Log[msg.Slot].MaxPrepare, n.Log[msg.Slot], msg.Slot}
+			n.Send(conn, recvID, msgN)
+		} else {
+			fmt.Println("MaxPrepare is less than or equal to proposed n (LOWER LOG SLOT). No reponse is being returned")
+		}
 	} else {
-		//Possible optimization: Send something back saying that the request failed
 		fmt.Println("MaxPrepare is less than or equal to proposed n. No reponse is being returned")
 	}
-	//TO DO: Add another if statement that won't respond to the request if it already accepted another one
 	return
 }
 
 func (n *Node) recvPromise(msg message) {
+	//The setting of the accVal is only included for telling the recovering site
+	//	that there is nothing at the location it's trying to read.
+	//Otherwise, we can assume, the AccVal will be set to the actual value after receiving accept
+	n.AccVal = msg.AVal
 	n.RecvAcceptedPromise++
 	return
 }
 
 func (n *Node) recvAccept(msg message, conn net.Conn) {
-	if msg.ANum >= n.MaxPrepare {
+	//If it's a different slot, change the MaxPrepare, AccNum, and AccVal of the specified log slot
+	if (msg.ANum >= n.MaxPrepare && msg.Slot == n.SlotCounter) || msg.ANum == leaderPropossal {
 		n.MaxPrepare = msg.ANum
 		n.AccNum = msg.ANum
 		n.AccVal = msg.AVal
@@ -91,8 +99,19 @@ func (n *Node) recvAccept(msg message, conn net.Conn) {
 		recvID := msg.SendID
 		msg := message{n.Id, ACK, n.AccNum, n.AccVal, n.SlotCounter}
 		n.Send(conn, recvID, msg)
+<<<<<<< HEAD
 	} else if msg.ANum == -1 { // I know it says zero, but the min ID is zero so... I think we'll live
 		//Leader stuff
+=======
+	} else if msg.ANum >= n.Log[msg.Slot].MaxPrepare && msg.Slot < n.SlotCounter {
+		//Recovery case
+		n.Log[msg.Slot].MaxPrepare = msg.ANum
+		n.Log[msg.Slot].AccNum = msg.ANum
+
+		recvID := msg.SendID
+		msgN := message{n.Id, ACK, n.Log[msg.Slot].MaxPrepare, n.Log[msg.Slot], msg.Slot}
+		n.Send(conn, recvID, msgN)
+>>>>>>> 3e970628d79223ea7c4dc70765621e6a28484f93
 	} else {
 		fmt.Println("MaxPrepare is less than accept value of n. No reponse is being returned")
 	}
@@ -105,7 +124,10 @@ func (n *Node) recvAck(msg message) {
 }
 
 func (n *Node) recvCommit(msg message) {
-	if msg.AVal == n.AccVal {
+	//Check for if the propossal msg is of different log slot (instead of this if statement)
+	// If you have recieved a commit for a log slot you have already committed, update the AccNum & AccVal at log location
+	//if msg.AVal == n.AccVal
+	if msg.Slot == n.SlotCounter {
 		//Update the node values
 		n.CommitNodeUpdate()
 		//Add the value to the physical and virtual log
@@ -119,11 +141,5 @@ func (n *Node) recvCommit(msg message) {
 			delete(n.Blocks[msg.AVal.User], msg.AVal.Follower)
 		}
 	}
-	return
-}
-
-func (n *Node) recvFail(msg message) {
-	n.AccVal = msg.AVal
-	n.AccNum = msg.Slot
 	return
 }
