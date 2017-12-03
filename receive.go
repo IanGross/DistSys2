@@ -66,7 +66,7 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 	} else if msg.Slot < n.SlotCounter {
 		//DO NOT MOVE TO FIRST ELSE STATEMENT WITH AN &&
 		//IT WILL CAUSE AN OUT OF INDEX RANGE ERROR
-		if msg.ANum > n.Log[msg.Slot].MaxPrepare {
+		if msg.ANum >= n.Log[msg.Slot].MaxPrepare {
 			//Recovery case
 			n.Log[msg.Slot].MaxPrepare = msg.ANum
 			recvID := msg.SendID
@@ -77,7 +77,10 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 		}
 	} else {
 		//Possible optimization: Send something back saying that the request failed
-		fmt.Println("MaxPrepare is less than or equal to proposed n. No reponse is being returned")
+		fmt.Printf("MaxPrepare %d is less than or equal to proposed n(%d). No reponse is being returned\n",
+			n.MaxPrepare, msg.ANum)
+
+		fmt.Printf("msg.Slot: %d  : n.SlotCounter %d \n", msg.Slot, n.SlotCounter)
 	}
 	//TO DO: Add another if statement that won't respond to the request if it already accepted another one
 	return

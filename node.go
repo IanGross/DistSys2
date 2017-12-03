@@ -148,13 +148,15 @@ func makeNode(inputfile string, inputID int) *Node {
 		if recoverCount, err := ret.LearnMissingEntries(); err != nil {
 			log.Println("Error has occured while recovering missing entries")
 		} else {
-			if recoverCount == 1 {
+			if recoverCount == 1 { // That pural
 				fmt.Printf("Site has learned about %v missing entry during recovery\n", recoverCount)
 			} else if recoverCount > 1 || recoverCount == 0 {
 				fmt.Printf("Site has learned about %v missing entries during recovery\n", recoverCount)
 			}
 		}
 	}
+
+	ret.UpdateTimeline()
 
 	return ret
 }
