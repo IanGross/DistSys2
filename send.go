@@ -92,7 +92,7 @@ func (n *Node) RecoveryProposePhase(ety entry, slotPropose int) bool {
 func (n *Node) RecoveryAcceptPhase(ety entry, slotPropose int) bool {
 	n.RecvAcceptedAck = 0
 	n.CountSiteFailures = 0
-	msg := message{n.Id, ACCEPT, n.getProposeValue(), ety, slotPropose}
+	msg := message{n.Id, ACCEPT, n.ProposalVal, ety, slotPropose}
 	n.RecoveryBroadCast(msg)
 	fmt.Println("Number of Responses Received:", n.RecvAcceptedAck)
 	//If receive ack from a majority, send commit(v)
