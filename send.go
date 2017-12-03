@@ -68,7 +68,7 @@ func (n *Node) RecoveryProposePhase(ety entry, slotPropose int) bool {
 		n.RecoveryBroadCast(msg)
 		fmt.Println("Number of Responses Received:", n.RecvAcceptedPromise)
 
-		if n.RecvAcceptedPromise >= n.MajorityVal {
+		if n.RecvAcceptedPromise+1 >= n.MajorityVal {
 			//if the value returned is empty, we have encountered the stop condition
 			var emptyEty entry
 			if emptyEty == n.AccVal {
@@ -96,7 +96,7 @@ func (n *Node) RecoveryAcceptPhase(ety entry, slotPropose int) bool {
 	n.RecoveryBroadCast(msg)
 	fmt.Println("Number of Responses Received:", n.RecvAcceptedAck)
 	//If receive ack from a majority, send commit(v)
-	if n.RecvAcceptedAck >= n.MajorityVal {
+	if n.RecvAcceptedAck+1 >= n.MajorityVal {
 		fmt.Println("Received ack from a majority of sites, sending commit")
 		ety.AccNum = n.ProposalVal
 		ety.MaxPrepare = n.ProposalVal
