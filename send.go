@@ -98,7 +98,9 @@ func (n *Node) RecoveryAcceptPhase(ety entry, slotPropose int) bool {
 	//If receive ack from a majority, send commit(v)
 	if n.RecvAcceptedAck >= n.MajorityVal {
 		fmt.Println("Received ack from a majority of sites, sending commit")
-		msg := message{n.Id, COMMIT, n.getProposeValue(), ety, slotPropose}
+		ety.AccNum = n.ProposalVal
+		ety.MaxPrepare = n.ProposalVal
+		msg := message{n.Id, COMMIT, n.ProposalVal, ety, slotPropose}
 
 		//Because there is an issue when we try to send the message to ourself...
 		//	we are just going to directly commit the message
