@@ -80,7 +80,7 @@ func (n *Node) recvPrepare(msg message, conn net.Conn) {
 		fmt.Printf("MaxPrepare %d is less than or equal to proposed n(%d). No reponse is being returned\n",
 			n.MaxPrepare, msg.ANum)
 
-		fmt.Printf("msg.Slot: %d  : n.SlotCounter %d \n", msg.Slot, n.SlotCounter)
+		//fmt.Printf("msg.Slot: %d  : n.SlotCounter %d \n", msg.Slot, n.SlotCounter)
 	}
 	//TO DO: Add another if statement that won't respond to the request if it already accepted another one
 	return
@@ -96,6 +96,7 @@ func (n *Node) recvPromise(msg message) {
 	if msg.AVal == emptyVal || msg.ANum == emptyPropossal {
 		n.RecoverStop = true
 	}
+	n.AccVal = msg.AVal
 	n.RecvAcceptedPromise++
 	return
 }
