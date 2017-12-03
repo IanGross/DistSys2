@@ -73,7 +73,17 @@ func OrganizeEntries(logContent []entry) []entry {
 
 func (localN *Node) ViewTweets() {
 	fmt.Println("Current events in log:")
-	organizedLog := OrganizeEntries(localN.Log)
+	localN.UpdateTimeline()
+	for _, tweet := range localN.Timeline {
+		//why so many Itoas? fmt.Printf("%i", somevalue ) would work
+		fmt.Printf(time.Time.String(tweet.Clock) + " - ")
+		fmt.Printf("Propossal value %d, ", tweet.AccNum)
+		fmt.Printf("Slot %d - ", tweet.SlotNumber)
+		fmt.Printf("User %d: ", tweet.User)
+		fmt.Printf(tweet.Message)
+		fmt.Println("")
+	}
+	/*organizedLog := OrganizeEntries(localN.Log)
 	logReverse := reverse(organizedLog)
 	for i := 0; i < len(logReverse); i++ {
 		if logReverse[i].Event == TWEET && !localN.checkBlock(logReverse[i].User, localN.Id) {
@@ -85,7 +95,7 @@ func (localN *Node) ViewTweets() {
 			fmt.Printf(logReverse[i].Message)
 			fmt.Println("")
 		}
-	}
+	}*/
 }
 
 // Do not print tweet if the tweeter has blocked me

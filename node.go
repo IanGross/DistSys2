@@ -38,7 +38,8 @@ type Node struct {
 
 	NodeMutex *sync.Mutex
 
-	Log []entry
+	Log      []entry
+	Timeline []entry
 
 	Blocks map[int]map[int]bool
 
@@ -239,6 +240,7 @@ func (n *Node) CommitNodeUpdate() {
 	var itt entry
 	n.AccVal = itt
 	n.ProposalVal = n.Id
+	n.UpdateTimeline()
 	return
 }
 
@@ -251,4 +253,16 @@ func (n *Node) getProposeValue() int {
 		return leaderPropossal
 	}
 	return n.ProposalVal
+}
+
+func (n *Node) UpdateTimeline() {
+	n.Timeline = make([]entry, 0)
+	organizedLog := OrganizeEntries(n.Log)
+	logReverse := reverse(organizedLog)
+	for i := 0; i < len(logReverse); i++ {
+		if logReverse[i].Event == TWEET && !n.checkBlock(logReverse[i].User, n.Id) {
+			//why so many Itoas? fmt.Printf("%i", somevalue ) would work
+			n.Timeline = append(n.Timeline, logReverse[i])
+		}
+	}
 }
