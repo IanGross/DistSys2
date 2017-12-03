@@ -185,12 +185,11 @@ func (n *Node) LoadEntries(filename string) (bool, bool, error) {
 //LoadDict - Get the dictionary information from the log
 func (n *Node) LoadDict() error {
 	organizedLog := OrganizeEntries(n.Log)
-	logReverse := reverse(organizedLog)
-	for i := 0; i < len(logReverse); i++ {
-		if logReverse[i].Event == INSERT {
-			n.Blocks[logReverse[i].User][logReverse[i].Follower] = true
-		} else if logReverse[i].Event == DELETE {
-			delete(n.Blocks[logReverse[i].User], logReverse[i].Follower)
+	for i := 0; i < len(organizedLog); i++ {
+		if organizedLog[i].Event == INSERT {
+			n.Blocks[organizedLog[i].User][organizedLog[i].Follower] = true
+		} else if organizedLog[i].Event == DELETE {
+			delete(n.Blocks[organizedLog[i].User], organizedLog[i].Follower)
 		}
 	}
 	return nil
