@@ -90,7 +90,12 @@ func (n *Node) recvPromise(msg message) {
 	//The setting of the accVal is only included for telling the recovering site
 	//	that there is nothing at the location it's trying to read.
 	//Otherwise, we can assume, the AccVal will be set to the actual value after receiving accept
-	n.AccVal = msg.AVal
+
+	//FOR RECOVERY
+	var emptyVal entry
+	if msg.AVal == emptyVal || msg.ANum == emptyPropossal {
+		n.RecoverStop = true
+	}
 	n.RecvAcceptedPromise++
 	return
 }

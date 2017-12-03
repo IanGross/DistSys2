@@ -71,8 +71,7 @@ func (n *Node) RecoveryProposePhase(ety entry, slotPropose int) bool {
 
 		if n.RecvAcceptedPromise+1 >= n.MajorityVal {
 			//if the value returned is empty, we have encountered the stop condition
-			var emptyEty entry
-			if emptyEty == n.AccVal {
+			if n.RecoverStop == true {
 				fmt.Println("The received responses are empty, propossed slot has not been filled (EXITING RECOVERY)")
 				return false
 			}

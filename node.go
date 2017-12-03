@@ -33,6 +33,7 @@ type Node struct {
 	CountSiteFailures   int
 	SlotCounter         int
 	LeaderID            int
+	RecoverStop         bool
 
 	OutputChannel chan string
 
@@ -80,6 +81,7 @@ func makeNode(inputfile string, inputID int) *Node {
 	ret.MajorityVal = info.TotalNodes/2 + 1
 	ret.SlotCounter = 0
 	ret.LeaderID = info.EntryLeaderID
+	ret.RecoverStop = false
 
 	ret.OutputChannel = make(chan string)
 
