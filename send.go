@@ -62,6 +62,7 @@ func (n *Node) AcceptPhase(ety entry, slotPropose int) bool {
 
 func (n *Node) RecoveryProposePhase(ety entry, slotPropose int) bool {
 	for {
+		fmt.Println("CURRENT PROPOSING LOG: ***** ", slotPropose)
 		n.RecvAcceptedPromise = 0
 		n.CountSiteFailures = 0
 		msg := message{n.Id, PREPARE, n.ProposalVal, ety, slotPropose}
